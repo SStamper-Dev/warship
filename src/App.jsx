@@ -31,7 +31,7 @@ function App() {
             onChange={(e) => setUsername(e.target.value)}
             required
           />
-          <button type="submit">Join Game</button>
+          <button type="submit">Login and Play!</button>
         </form>
         {error && <p style={{ color: 'red' }}>{error}</p>}
       </div>

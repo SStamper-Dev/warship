@@ -12,7 +12,7 @@ export const createPlayer = async (username) => {
             body: JSON.stringify({ username: username }),
         });
 
-        if (response.status === 201) {
+        if (response.ok) {
             const data = await response.json();
             // Store the ID immediately in localStorage for persistence
             localStorage.setItem('battleship_player_id', data.player_id);
