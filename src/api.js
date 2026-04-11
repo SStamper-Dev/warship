@@ -69,3 +69,26 @@ export const fetchGames = async () => {
         return null; 
     }
 };
+
+// Fetch games specifically for the current player (Safe/Try-Catch)
+export const fetchPlayerGames = async (playerId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/players/${playerId}/games`);
+        if (!response.ok) return null; 
+        return await response.json();
+    } catch (err) {
+        return null; // Fallback for servers without this endpoint
+    }
+};
+
+// Join a game (YAML Standard)
+export const joinGame = async (gameId, playerId) => {
+    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ player_id: parseInt(playerId) }),
+    });
+    // We treat 200 (Joined) and 400 (Already in game) as "Success" for navigation
+    if (response.ok || response.status === 409 || response.status === 400) return true;
+    throw new Error("Could not join game");
+};

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createPlayer, createGame } from './api' // Ensure both are imported
+import { createPlayer, createGame, joinGame } from './api' // Ensure both are imported
 import GameBoard from './GameBoard'
 
 function App() {
@@ -10,6 +10,8 @@ function App() {
   )
   const [error, setError] = useState(null)
   const [selectedGameId, setSelectedGameId] = useState(null)
+  const {allGames, setAllGames} = useState([])
+  const [myGames, setMyGames] = useState([])
 
   // Sync My Games to local storage whenever it changes
   useEffect(() => {
@@ -37,6 +39,25 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('battleship_player_id')
     setPlayerId(null)
+  }
+
+  const loadLobby = async () => {
+    const browseData = await fetchGames();
+    if (browseData) setAllGames(browseData);
+
+    const personalData = await fetchPlayerGames(playerId);
+    if (personalData) setMyGames(personalData);
+  }
+
+  const handleEnterGame = async (gameId, alreadyJoined) => {
+    try {
+      if (!alreadyJoined) {
+        await joinGame(gameId, playerId);
+      }
+      setSelectedGameId(gameId);
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   if (!playerId) {
@@ -76,7 +97,24 @@ function App() {
       </div>
 
       <div className="game-dashboard">
-        <h3>My Active Games</h3>
+        <section>
+          <h3>My Active Games</h3>
+          {myGames.map(g => (
+            <div key={g.game_id}>
+              Game #{g.game_id} ({g.status})
+              <button onClick={() => handleEnterGame(g.game_id, true)}>Play</button>
+            </div>
+          ))}
+        </section>
+        <section>
+          <h3>Browse All Games</h3>
+          {allGames.map(g => (
+            <div key={g.game_id}>
+              Game #{g.game_id} - {g.current_players}/{g.max_players}
+              <button onClick={() => handleEnterGame(g.game_id, false)}>Join & Play</button>
+            </div>
+          ))}
+        </section>
         {myGameIds.length === 0 ? (
           <p>You haven't joined any games yet.</p>
         ) : (
