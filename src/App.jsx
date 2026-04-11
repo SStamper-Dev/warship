@@ -8,6 +8,7 @@ function App() {
     JSON.parse(localStorage.getItem('battleship_my_games') || '[]')
   )
   const [error, setError] = useState(null)
+  const [selectedGameId, setSelectedGameId] = useState(null)
 
   // Sync My Games to local storage whenever it changes
   useEffect(() => {
@@ -49,6 +50,16 @@ function App() {
     )
   }
 
+  if (selectedGameId) {
+    return (
+      <GameBoard
+        gameId={selectedGameId}
+        playerId={playerId}
+        onBack={() => setSelectedGameId(null)}
+      />
+    )
+  }
+
   return (
     <div className="lobby-screen">
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -70,9 +81,9 @@ function App() {
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {myGameIds.map(id => (
-              <li key={id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
-                Game #{id} <button style={{ marginLeft: '10px' }}>Enter Game</button>
-              </li>
+              <div key={id} style={{ marginBottom: '10px', border: '1px solid #ddd', padding: '10px', borderRadius: '5px' }}>
+                Game #{id} <button style={{ marginLeft: '10px' }} onClick={() => setSelectedGameId(id)}>Enter Game</button>
+              </div>
             ))}
           </ul>
         )}
