@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPlayer, createGame } from './api' // Ensure both are imported
+import GameBoard from './GameBoard'
 
 function App() {
   const [playerId, setPlayerId] = useState(localStorage.getItem('battleship_player_id'))
