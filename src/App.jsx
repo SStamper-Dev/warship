@@ -1,96 +1,85 @@
 import { useState, useEffect } from 'react'
-import { createPlayer } from './api'
+import { createPlayer, createGame } from './api' // Ensure both are imported
 
 function App() {
   const [playerId, setPlayerId] = useState(localStorage.getItem('battleship_player_id'))
   const [username, setUsername] = useState('')
+  const [myGameIds, setMyGameIds] = useState(
+    JSON.parse(localStorage.getItem('battleship_my_games') || '[]')
+  )
   const [error, setError] = useState(null)
 
-  // 1. Join Logic: Save ID and switch to Lobby
+  // Sync My Games to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('battleship_my_games', JSON.stringify(myGameIds))
+  }, [myGameIds])
+
   const handleJoin = async (e) => {
     e.preventDefault()
     try {
       const data = await createPlayer(username)
       setPlayerId(data.player_id)
-      localStorage.setItem('battleship_player_id', data.player_id) // Persist identity
-    } catch (err) {
-      setError(err.message)
-    }
+      localStorage.setItem('battleship_player_id', data.player_id)
+    } catch (err) { setError(err.message) }
   }
 
-  const [myGameIds, setMyGameIds] = useState(
-    JSON.parse(localStorage.getItem('battleship_my_games') || '[]')
-  );
-  const [manualGameId, setManualGameId] = useState('');
+  const handleCreate = async () => {
+    try {
+      // Passes creator_id, grid_size (8), and max_players (2)
+      const data = await createGame(playerId, 8, 2)
+      setMyGameIds([...myGameIds, data.game_id]) // Add to local dashboard
+      alert(`Success! Created Game #${data.game_id}`)
+    } catch (err) { setError(err.message) }
+  }
 
-  // Every time myGameIds change, save to local storage
-  useEffect(() => {
-      localStorage.setItem('battleship_my_games', JSON.stringify(myGameIds));
-  }, [myGameIds]);
+  const handleLogout = () => {
+    localStorage.removeItem('battleship_player_id')
+    setPlayerId(null)
+  }
 
-  const handleCreateGame = async () => {
-      try {
-          const newGame = await createGame(playerId);
-          setMyGameIds([...myGameIds, newGame.game_id]); // Remember this game locally
-      } catch (err) {
-          alert(err.message);
-      }
-  };
-
-  const handleJoinManual = (e) => {
-      e.preventDefault();
-      if (!myGameIds.includes(parseInt(manualGameId))) {
-          setMyGameIds([...myGameIds, parseInt(manualGameId)]);
-      }
-      setManualGameId('');
-  };
-
-  // 2. Conditional Rendering: Decide what to show
   if (!playerId) {
     return (
-      <div className="join-container">
-        <h1>Welcome to Battleship</h1>
+      <div className="join-screen">
+        <h1>Battleship</h1>
         <form onSubmit={handleJoin}>
-          <input 
-            type="text" 
-            placeholder="Choose a username..." 
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-          <button type="submit">Login and Play!</button>
+          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} required />
+          <button type="submit">Join</button>
         </form>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
       </div>
     )
   }
 
   return (
-    <div className="lobby">
-      <h2>Lobby</h2>
-      <button onClick={handleCreateGame}>Create New Game</button>
-    
-      <form onSubmit={handleJoinManual}>
-        <input 
-          type="number" 
-          placeholder="Enter Game ID to Join" 
-          value={manualGameId}
-          onChange={(e) => setManualGameId(e.target.value)}
-        />
-        <button type="submit">Add Game</button>
-      </form>
+    <div className="lobby-screen">
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>Lobby (Player #{playerId})</h2>
+        <button onClick={handleLogout} style={{ background: '#ff4444', color: 'white' }}>Logout</button>
+      </header>
 
-      <div className="game-list">
-        <h3>Your Active Games</h3>
-        {myGameIds.map(id => (
-          <div key={id} className="game-card">
-            <span>Game #{id}</span>
-            <button onClick={() => setSelectedGameId(id)}>Open Game</button>
-          </div>
-        ))}
+      <div style={{ margin: '20px 0', border: '1px solid #ccc', padding: '15px' }}>
+        <h3>Host a Match</h3>
+        <button onClick={handleCreate} style={{ padding: '10px 20px', cursor: 'pointer' }}>
+          Create New 8x8 Game
+        </button>
       </div>
+
+      <div className="game-dashboard">
+        <h3>My Active Games</h3>
+        {myGameIds.length === 0 ? (
+          <p>You haven't joined any games yet.</p>
+        ) : (
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {myGameIds.map(id => (
+              <li key={id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+                Game #{id} <button style={{ marginLeft: '10px' }}>Enter Game</button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
-  );
+  )
 }
 
 export default App
