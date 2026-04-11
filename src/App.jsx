@@ -18,6 +18,33 @@ function App() {
     }
   }
 
+  const [myGameIds, setMyGameIds] = useState(
+    JSON.parse(localStorage.getItem('battleship_my_games') || '[]')
+  );
+  const [manualGameId, setManualGameId] = useState('');
+
+  // Every time myGameIds change, save to local storage
+  useEffect(() => {
+      localStorage.setItem('battleship_my_games', JSON.stringify(myGameIds));
+  }, [myGameIds]);
+
+  const handleCreateGame = async () => {
+      try {
+          const newGame = await createGame(playerId);
+          setMyGameIds([...myGameIds, newGame.game_id]); // Remember this game locally
+      } catch (err) {
+          alert(err.message);
+      }
+  };
+
+  const handleJoinManual = (e) => {
+      e.preventDefault();
+      if (!myGameIds.includes(parseInt(manualGameId))) {
+          setMyGameIds([...myGameIds, parseInt(manualGameId)]);
+      }
+      setManualGameId('');
+  };
+
   // 2. Conditional Rendering: Decide what to show
   if (!playerId) {
     return (
@@ -39,27 +66,31 @@ function App() {
   }
 
   return (
-    <div className="lobby-container">
-      <header>
-        <h1>Battleship Lobby</h1>
-        <p>Logged in as Player #{playerId}</p>
-        <button onClick={() => {
-          localStorage.removeItem('battleship_player_id')
-          setPlayerId(null)
-        }}>Logout</button>
-      </header>
+    <div className="lobby">
+      <h2>Lobby</h2>
+      <button onClick={handleCreateGame}>Create New Game</button>
+    
+      <form onSubmit={handleJoinManual}>
+        <input 
+          type="number" 
+          placeholder="Enter Game ID to Join" 
+          value={manualGameId}
+          onChange={(e) => setManualGameId(e.target.value)}
+        />
+        <button type="submit">Add Game</button>
+      </form>
 
-      {/* This is where the Game List will go next */}
-      <div className="game-controls">
-        <button>Create New Game</button>
-      </div>
-      
-      <div className="active-games">
+      <div className="game-list">
         <h3>Your Active Games</h3>
-        <p>No games found yet...</p>
+        {myGameIds.map(id => (
+          <div key={id} className="game-card">
+            <span>Game #{id}</span>
+            <button onClick={() => setSelectedGameId(id)}>Open Game</button>
+          </div>
+        ))}
       </div>
     </div>
-  )
+  );
 }
 
 export default App

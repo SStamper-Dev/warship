@@ -26,3 +26,16 @@ export const createPlayer = async (username) => {
         throw error;
     }
 };
+
+// src/api.js - Universal Friendly
+export const fetchGames = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/games`);
+        if (response.status === 404) return null; // Server doesn't support listing
+        if (!response.ok) throw new Error("Error fetching games");
+        return await response.json();
+    } catch (err) {
+        console.warn("Server does not support game listing.");
+        return null; 
+    }
+};
