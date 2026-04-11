@@ -92,3 +92,21 @@ export const joinGame = async (gameId, playerId) => {
     if (response.ok || response.status === 409 || response.status === 400) return true;
     throw new Error("Could not join game");
 };
+
+// POST /api/games/{id}/ships - Place ships
+export const placeShips = async (gameId, playerId, ships) => {
+    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/ships`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            player_id: parseInt(playerId), 
+            ships: ships // Array of { row, col }
+        }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to place ships");
+    }
+    return await response.json(); // Usually returns { status: "placed" }
+};

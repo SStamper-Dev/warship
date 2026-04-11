@@ -1,72 +1,98 @@
-// src/GameBoard.jsx
 import { useState, useEffect } from 'react';
-import { fetchGameDetail } from './api';
+import { fetchGameDetail, placeShips } from './api';
 
 function GameBoard({ gameId, playerId, onBack }) {
-    const [game, setGame] = useState(null);
-    const [error, setError] = useState(null);
+  const [game, setGame] = useState(null);
+  const [placedShips, setPlacedShips] = useState([]); // Array of {row, col}
+  const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const loadGame = async () => {
-            try {
-                const data = await fetchGameDetail(gameId);
-                setGame(data);
-            } catch (err) {
-                setError(err.message);
-            }
-        };
+  useEffect(() => {
+    const loadGame = async () => {
+      try {
+        const data = await fetchGameDetail(gameId);
+        setGame(data);
+        // If the server says we already placed ships, lock the UI
+        const me = data.players.find(p => p.player_id === parseInt(playerId));
+        if (me?.has_placed_ships) setIsReady(true);
+      } catch (err) { setError(err.message); }
+    };
 
-        loadGame();
-        const interval = setInterval(loadGame, 3000); // Polling for turn updates
-        return () => clearInterval(interval);
-    }, [gameId]);
+    loadGame();
+    const interval = setInterval(loadGame, 3000);
+    return () => clearInterval(interval);
+  }, [gameId, playerId]);
 
-    if (error) return (
-        <div style={{ padding: '20px', color: 'red' }}>
-            <h3>Error: {error}</h3>
-            <button onClick={onBack}>Return to Lobby</button>
+  const handleCellClick = (index) => {
+    if (isReady || game?.status !== 'waiting_setup') return;
+
+    // Coordinate Math: Convert 0-63 index to 8x8 Row/Col
+    const row = Math.floor(index / 8);
+    const col = index % 8;
+
+    const exists = placedShips.find(s => s.row === row && s.col === col);
+    if (exists) {
+        setPlacedShips(placedShips.filter(s => s !== exists));
+    } else if (placedShips.length < 3) { // Enforce the 3-ship limit
+        setPlacedShips([...placedShips, { row, col }]);
+    }
+  };
+
+  const handleCommit = async () => {
+    try {
+        await placeShips(gameId, playerId, placedShips);
+        setIsReady(true);
+        alert("Ships locked in!");
+    } catch (err) { alert(err.message); }
+  };
+
+  if (!game) return <div>Loading...</div>;
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <button onClick={onBack}>← Lobby</button>
+      <h2>Game #{gameId} - {game.status.replace('_', ' ')}</h2>
+      
+      {/* Interaction Instructions */}
+      {game.status === 'waiting_setup' && !isReady && (
+        <div style={{ marginBottom: '10px', padding: '10px', background: '#e3f2fd' }}>
+          <p>Select <strong>{3 - placedShips.length}</strong> more ships to start.</p>
+          <button disabled={placedShips.length !== 3} onClick={handleCommit}>
+            Confirm Placement
+          </button>
         </div>
-    );
+      )}
 
-    if (!game) return <div style={{ padding: '20px' }}>Loading Game #{gameId}...</div>;
-
-    return (
-        <div className="game-container" style={{ padding: '20px' }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <button onClick={onBack}>← Back to Lobby</button>
-                <h3>Game #{gameId}</h3>
-                <div>Status: <strong>{game.status}</strong></div>
-            </header>
-
-            <hr />
-
-            <div className="game-info">
-                <p>Grid Size: {game.grid_size}x{game.grid_size}</p>
-                <p>
-                    {game.current_turn_player_id === parseInt(playerId) 
-                        ? <span style={{ color: 'green', fontWeight: 'bold' }}>YOUR TURN!</span> 
-                        : "Waiting for Opponent..."}
-                </p>
-            </div>
-
-            {/* Placeholder for the 8x8 Grid */}
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: `repeat(${game.grid_size}, 40px)`,
-                gap: '4px',
-                marginTop: '20px'
-            }}>
-                {Array.from({ length: game.grid_size * game.grid_size }).map((_, i) => (
-                    <div key={i} style={{ 
-                        width: '40px', 
-                        height: '40px', 
-                        border: '1px solid #333', 
-                        backgroundColor: '#f0f0f0' 
-                    }}></div>
-                ))}
-            </div>
-        </div>
-    );
+      {/* 8x8 Grid Rendering */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(8, 40px)', 
+        gap: '4px',
+        background: '#333',
+        padding: '4px',
+        width: 'fit-content'
+      }}>
+        {Array.from({ length: 64 }).map((_, i) => {
+          const r = Math.floor(i / 8);
+          const c = i % 8;
+          const isShip = placedShips.find(s => s.row === r && s.col === c);
+          
+          return (
+            <div 
+              key={i}
+              onClick={() => handleCellClick(i)}
+              style={{
+                width: '40px', height: '40px',
+                backgroundColor: isShip ? '#4caf50' : '#bbdefb',
+                cursor: isReady ? 'default' : 'pointer',
+                border: '1px solid rgba(0,0,0,0.1)'
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export default GameBoard;
