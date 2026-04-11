@@ -93,9 +93,9 @@ export const joinGame = async (gameId, playerId) => {
     throw new Error("Could not join game");
 };
 
-// POST /api/games/{id}/ships - Place ships
+// POST /api/games/{id}/place - Place ships
 export const placeShips = async (gameId, playerId, ships) => {
-    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/ships`, {
+    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/place`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
