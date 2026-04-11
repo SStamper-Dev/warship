@@ -27,6 +27,36 @@ export const createPlayer = async (username) => {
     }
 };
 
+// Get a single game's details (Standard YAML requirement)
+export const fetchGameDetail = async (gameId) => {
+    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}`);
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Game not found");
+    }
+    return await response.json();
+};
+
+// Create a new game
+export const createGame = async (creatorId, gridSize = 8, maxPlayers = 2) => {
+    const response = await fetch(`${API_BASE_URL}/api/games`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            creator_id: parseInt(creatorId), 
+            grid_size: gridSize, 
+            max_players: maxPlayers 
+        }),
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        // Returns the error message format required by the YAML contract
+        throw new Error(errorData.message || errorData.error || "Failed to create game");
+    }
+    return await response.json(); 
+};
+
 // src/api.js - Universal Friendly
 export const fetchGames = async () => {
     try {
