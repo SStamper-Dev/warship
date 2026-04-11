@@ -27,8 +27,8 @@ function GameBoard({ gameId, playerId, onBack }) {
     if (isReady || game?.status !== 'waiting_setup') return;
 
     // Coordinate Math: Convert 0-63 index to 8x8 Row/Col
-    const row = Math.floor(index / 8);
-    const col = index % 8;
+    const row = Math.floor(index / game.grid_size);
+    const col = index % game.grid_size;
 
     const exists = placedShips.find(s => s.row === row && s.col === col);
     if (exists) {
@@ -66,15 +66,15 @@ function GameBoard({ gameId, playerId, onBack }) {
       {/* 8x8 Grid Rendering */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(8, 40px)', 
+        gridTemplateColumns: `repeat(${game.grid_size}, 40px)`, 
         gap: '4px',
         background: '#333',
         padding: '4px',
         width: 'fit-content'
       }}>
-        {Array.from({ length: 64 }).map((_, i) => {
-          const r = Math.floor(i / 8);
-          const c = i % 8;
+        {Array.from({ length: game.grid_size * game.grid_size }).map((_, i) => {
+          const r = Math.floor(i / game.grid_size);
+          const c = i % game.grid_size;
           const isShip = placedShips.find(s => s.row === r && s.col === c);
           
           return (

@@ -1,25 +1,37 @@
 import { useState, useEffect } from 'react'
-import { createPlayer, createGame, joinGame, fetchGames, fetchPlayerGames } from './api' // Ensure both are imported
+import { createPlayer, createGame, joinGame, fetchGames, fetchPlayerGames } from './api'
 import GameBoard from './GameBoard'
 
 function App() {
   const [playerId, setPlayerId] = useState(localStorage.getItem('battleship_player_id'))
   const [username, setUsername] = useState('')
-  const [myGameIds, setMyGameIds] = useState(
-    JSON.parse(localStorage.getItem('battleship_my_games') || '[]')
-  )
   const [error, setError] = useState(null)
   const [selectedGameId, setSelectedGameId] = useState(null)
+  
+  // FIX: Use brackets [] for useState
   const [allGames, setAllGames] = useState([])
   const [myGames, setMyGames] = useState([])
 
-  // Sync My Games to local storage whenever it changes
-  useEffect(() => {
-    if (!playerId) return; // Don't sync if not logged in
+  // The Lobby Fetcher
+  const loadLobby = async () => {
+    try {
+      const browseData = await fetchGames()
+      if (browseData) setAllGames(browseData)
 
-    loadLobby(); // Load lobby data on login and whenever myGameIds changes
-    const interval = setInterval(loadLobby, 3000); // Polling for updates every 3 seconds
-    return () => clearInterval(interval);
+      const personalData = await fetchPlayerGames(playerId)
+      if (personalData) setMyGames(personalData)
+    } catch (err) {
+      console.error("Lobby Load Error:", err)
+    }
+  }
+
+  // Poll for updates
+  useEffect(() => {
+    if (!playerId) return
+
+    loadLobby()
+    const interval = setInterval(loadLobby, 3000)
+    return () => clearInterval(interval)
   }, [playerId])
 
   const handleJoin = async (e) => {
@@ -33,35 +45,18 @@ function App() {
 
   const handleCreate = async () => {
     try {
-      // Passes creator_id, grid_size (8), and max_players (2)
-      const data = await createGame(playerId, 8, 2)
-      loadLobby() // Refresh lobby to show the new game
-      alert(`Success! Created Game #${data.game_id}`)
+      await createGame(playerId, 8, 2)
+      loadLobby() // Refresh lists immediately
     } catch (err) { setError(err.message) }
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('battleship_player_id')
-    setPlayerId(null)
-  }
-
-  const loadLobby = async () => {
-    const browseData = await fetchGames();
-    if (browseData) setAllGames(browseData);
-
-    const personalData = await fetchPlayerGames(playerId);
-    if (personalData) setMyGames(personalData);
   }
 
   const handleEnterGame = async (gameId, alreadyJoined) => {
     try {
       if (!alreadyJoined) {
-        await joinGame(gameId, playerId);
+        await joinGame(gameId, playerId) // Create the game_player record
       }
-      setSelectedGameId(gameId);
-    } catch (err) {
-      alert(err.message);
-    }
+      setSelectedGameId(gameId)
+    } catch (err) { setError(err.message) }
   }
 
   if (!playerId) {
@@ -78,58 +73,44 @@ function App() {
 
   if (selectedGameId) {
     return (
-      <GameBoard
-        gameId={selectedGameId}
-        playerId={playerId}
-        onBack={() => setSelectedGameId(null)}
-      />
+      <GameBoard gameId={selectedGameId} playerId={playerId} onBack={() => setSelectedGameId(null)} />
     )
   }
 
   return (
-    <div className="lobby-screen">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="lobby-screen" style={{ padding: '20px' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between' }}>
         <h2>Lobby (Player #{playerId})</h2>
-        <button onClick={handleLogout} style={{ background: '#ff4444', color: 'white' }}>Logout</button>
+        <button onClick={() => { localStorage.removeItem('battleship_player_id'); setPlayerId(null); }} style={{ background: '#ff4444', color: 'white' }}>Logout</button>
       </header>
 
       <div style={{ margin: '20px 0', border: '1px solid #ccc', padding: '15px' }}>
-        <h3>Host a Match</h3>
-        <button onClick={handleCreate} style={{ padding: '10px 20px', cursor: 'pointer' }}>
-          Create New 8x8 Game
-        </button>
+        <button onClick={handleCreate}>Create New 8x8 Game</button>
       </div>
 
       <div className="game-dashboard">
         <section style={{ marginBottom: '30px' }}>
-          <h3>My Active Games</h3>
-          {myGames && myGames.length > 0 ? (
+          <h3>My Active Games (Database Verified)</h3>
+          {myGames.length > 0 ? (
             myGames.map(g => (
-              <div key={g.game_id} style={{ marginBottom: '10px', border: '1px solid #ddd', padding: '10px', borderRadius: '5px' }}>
-                Game #{g.game_id} - {g.current_players}/{g.max_players}
+              <div key={g.game_id} style={{ border: '1px solid #ddd', padding: '10px', margin: '5px 0' }}>
+                Game #{g.game_id} ({g.status})
+                <button onClick={() => handleEnterGame(g.game_id, true)} style={{ marginLeft: '10px' }}>Enter</button>
               </div>
             ))
-          ) : (
-            <p>You haven't joined any games yet.</p>
-          )}
+          ) : <p>You aren't in any active matches.</p>}
         </section>
+
         <section>
           <h3>Browse All Games</h3>
-          {allGames && allGames.length > 0 ? (
-            allGames.map(g => {
-              const alreadyJoined = myGames.some(mg => mg.game_id === g.game_id);
-              return (
-                <div key={g.game_id} style={{ marginBottom: '10px', border: '1px solid #ddd', padding: '10px', borderRadius: '5px' }}>
-                  Game #{g.game_id} - {g.current_players}/{g.max_players}
-                  <button style={{ marginLeft: '10px' }} onClick={() => handleEnterGame(g.game_id, alreadyJoined)}>
-                    {alreadyJoined ? 'Play' : 'Join & Play'}
-                  </button>
-                </div>
-              );
-            })
-          ) : (
-            <p>No games available.</p>
-          )}
+          {allGames.length > 0 ? (
+            allGames.map(g => (
+              <div key={g.game_id} style={{ border: '1px solid #ddd', padding: '10px', margin: '5px 0' }}>
+                Game #{g.game_id} - {g.current_players}/{g.max_players} Players
+                <button onClick={() => handleEnterGame(g.game_id, false)} style={{ marginLeft: '10px' }}>Join & Play</button>
+              </div>
+            ))
+          ) : <p>No games available to join.</p>}
         </section>
       </div>
       {error && <p style={{ color: 'red' }}>{error}</p>}

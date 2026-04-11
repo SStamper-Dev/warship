@@ -61,12 +61,12 @@ export const createGame = async (creatorId, gridSize = 8, maxPlayers = 2) => {
 export const fetchGames = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/games`);
-        if (response.status === 404) return null; // Server doesn't support listing
+        if (response.status === 404) return []; // Server doesn't support listing
         if (!response.ok) throw new Error("Error fetching games");
         return await response.json();
     } catch (err) {
         console.warn("Server does not support game listing.");
-        return null; 
+        return []; 
     }
 };
 
@@ -74,10 +74,10 @@ export const fetchGames = async () => {
 export const fetchPlayerGames = async (playerId) => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/players/${playerId}/games`);
-        if (!response.ok) return null; 
+        if (!response.ok) return []; 
         return await response.json();
     } catch (err) {
-        return null; // Fallback for servers without this endpoint
+        return []; // Fallback for servers without this endpoint
     }
 };
 
