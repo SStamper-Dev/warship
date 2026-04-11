@@ -1,38 +1,63 @@
 import { useState, useEffect } from 'react'
-import { createPlayer } from './api';
-import './App.css'
+import { createPlayer } from './api'
 
 function App() {
-  const [username, setUsername] = useState('')
   const [playerId, setPlayerId] = useState(localStorage.getItem('battleship_player_id'))
+  const [username, setUsername] = useState('')
   const [error, setError] = useState(null)
 
-  const handleTestConnection = async () => {
+  // 1. Join Logic: Save ID and switch to Lobby
+  const handleJoin = async (e) => {
+    e.preventDefault()
     try {
-      setError(null)
-      const data = await createPlayer(username || 'Test_User_1')
+      const data = await createPlayer(username)
       setPlayerId(data.player_id)
-      console.log("Connection Successful! Player ID:", data.player_id)
+      localStorage.setItem('battleship_player_id', data.player_id) // Persist identity
     } catch (err) {
       setError(err.message)
-      console.error("Connection Failed:", err)
     }
   }
 
+  // 2. Conditional Rendering: Decide what to show
+  if (!playerId) {
+    return (
+      <div className="join-container">
+        <h1>Welcome to Battleship</h1>
+        <form onSubmit={handleJoin}>
+          <input 
+            type="text" 
+            placeholder="Choose a username..." 
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+          <button type="submit">Join Game</button>
+        </form>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+      </div>
+    )
+  }
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Battleship Universal Client</h1>
-      <p>Current Player ID: {playerId || 'Not Logged In'}</p>
+    <div className="lobby-container">
+      <header>
+        <h1>Battleship Lobby</h1>
+        <p>Logged in as Player #{playerId}</p>
+        <button onClick={() => {
+          localStorage.removeItem('battleship_player_id')
+          setPlayerId(null)
+        }}>Logout</button>
+      </header>
+
+      {/* This is where the Game List will go next */}
+      <div className="game-controls">
+        <button>Create New Game</button>
+      </div>
       
-      <input 
-        type="text" 
-        placeholder="Enter Username" 
-        value={username} 
-        onChange={(e) => setUsername(e.target.value)} 
-      />
-      <button onClick={handleTestConnection}>Test Connection</button>
-      
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      <div className="active-games">
+        <h3>Your Active Games</h3>
+        <p>No games found yet...</p>
+      </div>
     </div>
   )
 }
