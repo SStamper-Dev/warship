@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createPlayer, createGame, joinGame } from './api' // Ensure both are imported
+import { createPlayer, createGame, joinGame, fetchGames, fetchPlayerGames } from './api' // Ensure both are imported
 import GameBoard from './GameBoard'
 
 function App() {
