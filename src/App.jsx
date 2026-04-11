@@ -131,17 +131,6 @@ function App() {
             <p>No games available.</p>
           )}
         </section>
-        {myGameIds.length === 0 ? (
-          <p>You haven't joined any games yet.</p>
-        ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {myGameIds.map(id => (
-              <div key={id} style={{ marginBottom: '10px', border: '1px solid #ddd', padding: '10px', borderRadius: '5px' }}>
-                Game #{id} <button style={{ marginLeft: '10px' }} onClick={() => setSelectedGameId(id)}>Enter Game</button>
-              </div>
-            ))}
-          </ul>
-        )}
       </div>
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
