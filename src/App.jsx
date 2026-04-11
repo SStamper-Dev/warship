@@ -99,7 +99,7 @@ function App() {
       <div className="game-dashboard">
         <section>
           <h3>My Active Games</h3>
-          {myGames.map(g => (
+          {myGames?.map(g => (
             <div key={g.game_id}>
               Game #{g.game_id} ({g.status})
               <button onClick={() => handleEnterGame(g.game_id, true)}>Play</button>
@@ -108,7 +108,7 @@ function App() {
         </section>
         <section>
           <h3>Browse All Games</h3>
-          {allGames.map(g => (
+          {allGames?.map(g => (
             <div key={g.game_id}>
               Game #{g.game_id} - {g.current_players}/{g.max_players}
               <button onClick={() => handleEnterGame(g.game_id, false)}>Join & Play</button>
