@@ -110,3 +110,29 @@ export const placeShips = async (gameId, playerId, ships) => {
     }
     return await response.json(); // Usually returns { status: "placed" }
 };
+
+// POST /api/games/{id}/fire - Standard Combat
+export const fireShot = async (gameId, playerId, row, col) => {
+    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/fire`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            player_id: parseInt(playerId), 
+            row: parseInt(row), 
+            col: parseInt(col) 
+        }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Shot failed");
+    }
+    return await response.json(); // Returns { result: "hit/miss", next_player_id }
+};
+
+// GET /api/games/{id}/moves - Move history
+export const fetchMoves = async (gameId) => {
+    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/moves`);
+    if (!response.ok) return [];
+    return await response.json(); // Array of { player_id, row, col, result }
+};

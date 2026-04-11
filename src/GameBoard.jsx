@@ -6,12 +6,18 @@ function GameBoard({ gameId, playerId, onBack }) {
   const [placedShips, setPlacedShips] = useState([]); // Array of {row, col}
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(null);
+  const [moves, setMoves] = useState([]); // For attacks
 
   useEffect(() => {
     const loadGame = async () => {
       try {
         const data = await fetchGameDetail(gameId);
         setGame(data);
+
+        if (data.status === 'playing' || data.status === 'finished') {
+            const movesData = await fetchMoves(gameId);
+            setMoves(movesData);
+        }
         // If the server says we already placed ships, lock the UI
         const me = data.players.find(p => p.player_id === parseInt(playerId));
         if (me?.has_placed_ships) setIsReady(true);
@@ -23,18 +29,29 @@ function GameBoard({ gameId, playerId, onBack }) {
     return () => clearInterval(interval);
   }, [gameId, playerId]);
 
-  const handleCellClick = (index) => {
-    if (isReady || game?.status !== 'waiting_setup') return;
-
-    // Coordinate Math: Convert 0-63 index to 8x8 Row/Col
+  const handleCellClick = async (index) => {
     const row = Math.floor(index / game.grid_size);
     const col = index % game.grid_size;
 
-    const exists = placedShips.find(s => s.row === row && s.col === col);
-    if (exists) {
-        setPlacedShips(placedShips.filter(s => s !== exists));
-    } else if (placedShips.length < 3) { // Enforce the 3-ship limit
-        setPlacedShips([...placedShips, { row, col }]);
+    if (game?.status == 'waiting_setup') {
+         const exists = placedShips.find(s => s.row === row && s.col === col);
+        if (exists) {
+            setPlacedShips(placedShips.filter(s => s !== exists));
+        } else if (placedShips.length < 3) { // Enforce the 3-ship limit
+            setPlacedShips([...placedShips, { row, col }]);
+        }
+    } else if (game?.status === 'playing') {
+        //Only allow firing if it's our turn and we are ready
+        if (game.current_player_id !== parseInt(playerId)) {
+            alert("Wait for your turn!");
+            return;
+        }
+
+        try {
+            const result = await fireShot(gameId, playerId, row, col);
+            console.log("Shot Result:", result);
+            loadGame(); // Refresh game state after firing
+        } catch (err) { alert(err.message); }
     }
   };
 
@@ -75,7 +92,16 @@ function GameBoard({ gameId, playerId, onBack }) {
         {Array.from({ length: game.grid_size * game.grid_size }).map((_, i) => {
           const r = Math.floor(i / game.grid_size);
           const c = i % game.grid_size;
+
+          const move = moves.find(m => m.row === r && m.col === c);
           const isShip = placedShips.find(s => s.row === r && s.col === c);
+
+          let bgColor = '#bbdefb'; // Default water
+          if (move) {
+            bgColor = move.result === 'hit' ? '#f44336' : '#90caf9'; // Red for hit, light blue for miss
+          } else if (isShip) {
+            bgColor = '#4caf50'; // Green for placed ship
+          }
           
           return (
             <div 
@@ -83,11 +109,17 @@ function GameBoard({ gameId, playerId, onBack }) {
               onClick={() => handleCellClick(i)}
               style={{
                 width: '40px', height: '40px',
-                backgroundColor: isShip ? '#4caf50' : '#bbdefb',
+                backgroundColor: bgColor,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 cursor: isReady ? 'default' : 'pointer',
                 border: '1px solid rgba(0,0,0,0.1)'
               }}
-            />
+            >
+            {move?.result === 'hit' && '💥'}
+            {move?.result === 'miss' && '💧'}
+            </div>
           );
         })}
       </div>
