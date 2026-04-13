@@ -18,7 +18,7 @@ function Board({ gridSize, moves, ships, onCellClick, isOffensive, myPlayerId })
         const c = i % gridSize;
 
         // Diagnostic: Use loose equality or parseInt to avoid String/Int mismatches
-        const move = moves?.find(m => parseInt(m.row) === r && parseInt(m.col) === c);
+        const move = moves?.find(m => parseInt(m.row) === r && parseInt(m.column || m.col) === c);
         const hasShip = ships?.find(s => parseInt(s.row) === r && parseInt(s.col) === c);
 
         let bgColor = '#bbdefb'; // Water
@@ -165,7 +165,7 @@ function GameBoard({ gameId, playerId, onBack }) {
           <Board 
             gridSize={game.grid_size}
             // Filter: Only show moves fired BY you
-            moves={moves.filter(m => parseInt(m.player_id) === parseInt(playerId))}
+            moves={moves}
             ships={[]} // Never show your own ships on the attack board
             isOffensive={true}
             onCellClick={game.status === 'playing' ? handleCellClick : null}
