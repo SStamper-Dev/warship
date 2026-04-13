@@ -16,7 +16,7 @@ function GameBoard({ gameId, playerId, onBack }) {
 
         if (data.status === 'playing' || data.status === 'finished') {
           const movesData = await fetchMoves(gameId);
-          setMoves(movesData);
+          setMoves(Array.isArray(movesData) ? movesData : []); // Ensure it's an array
         }
         // If the server says we already placed ships, lock the UI
         if (data.players) {
@@ -98,8 +98,8 @@ function GameBoard({ gameId, playerId, onBack }) {
           const r = Math.floor(i / game.grid_size);
           const c = i % game.grid_size;
 
-          const move = moves.find(m => m.row === r && m.col === c);
-          const isShip = placedShips.find(s => s.row === r && s.col === c);
+          const move = (moves || []).find(m => m.row === r && m.col === c);
+          const isShip = (placedShips || []).find(s => s.row === r && s.col === c);
 
           let bgColor = '#bbdefb'; // Default water
           if (move) {
