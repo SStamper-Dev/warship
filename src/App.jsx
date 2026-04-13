@@ -104,12 +104,28 @@ function App() {
         <section>
           <h3>Browse All Games</h3>
           {allGames.length > 0 ? (
-            allGames.map(g => (
-              <div key={g.game_id} style={{ border: '1px solid #ddd', padding: '10px', margin: '5px 0' }}>
-                Game #{g.game_id} - {g.current_players}/{g.max_players} Players
-                <button onClick={() => handleEnterGame(g.game_id, false)} style={{ marginLeft: '10px' }}>Join & Play</button>
-              </div>
-            ))
+            allGames.map(g => {
+              // logic for button state
+              const isFull = g.current_players >= g.max_players
+              const alreadyIn = myGames.some(mg => mg.game_id === g.game_id)
+
+              return(
+                <div key={g.game_id} style={{ border: '1px solid #ddd', padding: '10px', margin: '5px 0' }}>
+                  Game #{g.game_id} - {g.current_players}/{g.max_players} Players
+                  <button onClick={() => handleEnterGame(g.game_id, alreadyIn)} 
+                  //Disable if full and not already in, or if game is finished
+                  disabled={(isFull && !alreadyIn) || g.status === 'finished'}
+                  style={{ 
+                    marginLeft: '10px',
+                    opacity: (isFull && !alreadIn) ? 0.5 : 1,
+                    cursor: (isFull && !alreadIn) ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                    {alreadyIn ? 'Enter' : isFull ? 'Game Full' : 'Join & Play'}
+                  </button>
+                </div>
+              )
+            })
           ) : <p>No games available to join.</p>}
         </section>
       </div>

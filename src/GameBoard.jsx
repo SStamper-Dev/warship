@@ -62,6 +62,12 @@ function GameBoard({ gameId, playerId, onBack }) {
   };
 
   const handleCommit = async () => {
+    //frontend guard
+    const isParticipant = game.players.some(p => p.player_id === parseInt(playerId));
+    if (!isParticipant) {
+      alert("You are not a participant in this game.");
+      return;
+    }
     try {
       await placeShips(gameId, playerId, placedShips);
       setIsReady(true);
