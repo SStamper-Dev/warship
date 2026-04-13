@@ -70,7 +70,7 @@ function GameBoard({ gameId, playerId, onBack }) {
       if (data.status !== 'waiting_setup') {
         const movesData = await fetchMoves(gameId);
         // Spread into new array to ensure React triggers re-render
-        const actualMoves = Array.isArray(response) ? response : (response.moves || []);
+        const actualMoves = Array.isArray(movesData) ? movesData : (movesData.moves || []);
         setMoves([...actualMoves]);
       }
 
@@ -127,6 +127,16 @@ function GameBoard({ gameId, playerId, onBack }) {
         <h2>Game #{gameId} — {game.status.toUpperCase()}</h2>
         {error && <p style={{ color: 'red' }}>{error}</p>}
       </header>
+
+      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+        {game.status === 'playing' ? (
+          <h3 style={{ color: game.current_turn_player_id === parseInt(playerId) ? '#4caf50' : '#f44336' }}>
+            {game.current_turn_player_id === parseInt(playerId) ? "✅ YOUR TURN" : "⌛ OPPONENT'S TURN"}
+          </h3>
+        ) : (
+          <h3>Status: {game.status.replace('_', ' ').toUpperCase()}.</h3>
+        )}
+      </div>
 
       <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', flexWrap: 'wrap' }}>
         
