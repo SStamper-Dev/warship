@@ -14,39 +14,64 @@ function Board({ gridSize, moves, ships, onCellClick, isOffensive, myPlayerId })
       border: isOffensive ? '2px solid #f44336' : '2px solid #4caf50'
     }}>
       {Array.from({ length: gridSize * gridSize }).map((_, i) => {
-        const r = Math.floor(i / gridSize);
-        const c = i % gridSize;
+  const r = Math.floor(i / gridSize);
+  const c = i % gridSize;
 
-        // Diagnostic: Use loose equality or parseInt to avoid String/Int mismatches
-        const move = moves?.find(m => parseInt(m.row) === r && parseInt(m.column || m.col) === c);
-        const hasShip = ships?.find(s => parseInt(s.row) === r && parseInt(s.col) === c);
+  // 1. Check for incoming fire (API uses 'column', YAML says 'col')
+  const move = moves?.find(m => parseInt(m.row) === r && parseInt(m.column || m.col) === c);
+  
+  // 2. Check for your secret ships (from localStorage)
+  const hasMyShip = ships?.find(s => parseInt(s.row) === r && parseInt(s.col) === c);
 
-        let bgColor = '#bbdefb'; // Water
-        if (move) {
-          // Visual Feedback: Red for Hit, Dark Grey for Miss
-          bgColor = move.result === 'hit' ? '#f44336' : '#546e7a'; 
-        } else if (hasShip && !isOffensive) {
-          bgColor = '#4caf50'; // Your ships (only visible on defensive board)
-        }
+  // 3. The 3-Color Intel Logic
+  let bgColor = '#bbdefb'; // Default: Blue Water
+  let emoji = null;
 
-        return (
-          <div
-            key={i}
-            onClick={() => onCellClick?.(i)}
-            style={{
-              width: '40px', height: '40px',
-              backgroundColor: bgColor,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: onCellClick ? 'pointer' : 'default',
-              border: '1px solid rgba(0,0,0,0.1)',
-              fontSize: '20px'
-            }}
-          >
-            {move?.result === 'hit' && '💥'}
-            {move?.result === 'miss' && '💧'}
-          </div>
-        );
-      })}
+  if (move) {
+    if (move.result === 'hit') {
+      if (hasMyShip && !isOffensive) {
+        // SCENARIO 1: They hit YOU.
+        bgColor = '#f44336'; // Red
+        emoji = '💥';
+      } else {
+        // SCENARIO 2: They hit SOMEONE ELSE. 
+        // You don't have a ship here, but the server reported a hit.
+        bgColor = '#ff9800'; // Orange
+        emoji = '⚠️'; 
+      }
+    } else if (move.result === 'miss') {
+      // SCENARIO 3: They hit nothing.
+      bgColor = '#546e7a'; // Dark Grey
+      emoji = '💧';
+    }
+  } else if (hasMyShip && !isOffensive) {
+    // SCENARIO 4: Your untouched ship hiding in the water
+    bgColor = '#4caf50'; // Green
+  }
+
+  return (
+    <div
+      key={i}
+      onClick={() => onCellClick?.(i)}
+      style={{
+        width: '40px', height: '40px',
+        backgroundColor: bgColor,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: onCellClick ? 'pointer' : 'default',
+        border: '1px solid rgba(0,0,0,0.1)',
+        fontSize: '18px',
+        color: 'white' // Ensures emojis/icons pop
+      }}
+      title={
+        move && move.result === 'hit' && !hasMyShip 
+          ? `Player ${move.player_id} hit an unknown ship here!` 
+          : ''
+      }
+    >
+      {emoji}
+    </div>
+  );
+})}
     </div>
   );
 }
