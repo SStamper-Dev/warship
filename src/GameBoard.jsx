@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchGameDetail, placeShips } from './api';
+import { fetchGameDetail, placeShips, fireShot, fetchMoves } from './api';
 
 function GameBoard({ gameId, playerId, onBack }) {
   const [game, setGame] = useState(null);
@@ -15,8 +15,8 @@ function GameBoard({ gameId, playerId, onBack }) {
         setGame(data);
 
         if (data.status === 'playing' || data.status === 'finished') {
-            const movesData = await fetchMoves(gameId);
-            setMoves(movesData);
+          const movesData = await fetchMoves(gameId);
+          setMoves(movesData);
         }
         // If the server says we already placed ships, lock the UI
         const me = data.players.find(p => p.player_id === parseInt(playerId));
@@ -34,32 +34,35 @@ function GameBoard({ gameId, playerId, onBack }) {
     const col = index % game.grid_size;
 
     if (game?.status === 'waiting_setup') {
-         const exists = placedShips.find(s => s.row === row && s.col === col);
-        if (exists) {
-            setPlacedShips(placedShips.filter(s => s !== exists));
-        } else if (placedShips.length < 3) { // Enforce the 3-ship limit
-            setPlacedShips([...placedShips, { row, col }]);
-        }
+      const exists = placedShips.find(s => s.row === row && s.col === col);
+      if (exists) {
+        setPlacedShips(placedShips.filter(s => s !== exists));
+      } else if (placedShips.length < 3) { // Enforce the 3-ship limit
+        setPlacedShips([...placedShips, { row, col }]);
+      }
     } else if (game?.status === 'playing') {
-        //Only allow firing if it's our turn and we are ready
-        if (game.current_player_id !== parseInt(playerId)) {
-            alert("Wait for your turn!");
-            return;
-        }
+      //Only allow firing if it's our turn and we are ready
+      if (game.current_turn_player_id !== parseInt(playerId)) {
+        alert("Wait for your turn!");
+        return;
+      }
 
-        try {
-            const result = await fireShot(gameId, playerId, row, col);
-            console.log("Shot Result:", result);
-            loadGame(); // Refresh game state after firing
-        } catch (err) { alert(err.message); }
+      try {
+        const result = await fireShot(gameId, playerId, row, col);
+        console.log("Shot Result:", result);
+        const updatedGame = await fetchGameDetail(gameId);
+        const updatedMoves = await fetchMoves(gameId);
+        setGame(updatedGame);
+        setMoves(updatedMoves);
+      } catch (err) { alert(err.message); }
     }
   };
 
   const handleCommit = async () => {
     try {
-        await placeShips(gameId, playerId, placedShips);
-        setIsReady(true);
-        alert("Ships locked in!");
+      await placeShips(gameId, playerId, placedShips);
+      setIsReady(true);
+      alert("Ships locked in!");
     } catch (err) { alert(err.message); }
   };
 
@@ -69,7 +72,7 @@ function GameBoard({ gameId, playerId, onBack }) {
     <div style={{ padding: '20px' }}>
       <button onClick={onBack}>← Lobby</button>
       <h2>Game #{gameId} - {game.status.replace('_', ' ')}</h2>
-      
+
       {/* Interaction Instructions */}
       {game.status === 'waiting_setup' && !isReady && (
         <div style={{ marginBottom: '10px', padding: '10px', background: '#e3f2fd' }}>
@@ -81,9 +84,9 @@ function GameBoard({ gameId, playerId, onBack }) {
       )}
 
       {/* 8x8 Grid Rendering */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: `repeat(${game.grid_size}, 40px)`, 
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${game.grid_size}, 40px)`,
         gap: '4px',
         background: '#333',
         padding: '4px',
@@ -102,9 +105,9 @@ function GameBoard({ gameId, playerId, onBack }) {
           } else if (isShip) {
             bgColor = '#4caf50'; // Green for placed ship
           }
-          
+
           return (
-            <div 
+            <div
               key={i}
               onClick={() => handleCellClick(i)}
               style={{
@@ -117,8 +120,8 @@ function GameBoard({ gameId, playerId, onBack }) {
                 border: '1px solid rgba(0,0,0,0.1)'
               }}
             >
-            {move?.result === 'hit' && '💥'}
-            {move?.result === 'miss' && '💧'}
+              {move?.result === 'hit' && '💥'}
+              {move?.result === 'miss' && '💧'}
             </div>
           );
         })}
