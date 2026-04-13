@@ -170,8 +170,11 @@ function GameBoard({ gameId, playerId, onBack }) {
           <h3>🛡️ Your Board</h3>
           <Board 
             gridSize={game.grid_size}
-            // Filter: Only show moves NOT fired by you (Enemy Fire)
-            moves={moves.filter(m => parseInt(m.player_id) !== parseInt(playerId))}
+            // FIX: Only show moves from OTHERS that actually HIT something
+            moves={moves.filter(m => 
+              parseInt(m.player_id) !== parseInt(playerId) && 
+              m.result === 'hit' // Hides all enemy misses
+            )}
             ships={placedShips}
             isOffensive={false}
             onCellClick={game.status === 'waiting_setup' ? handleCellClick : null}
@@ -189,9 +192,9 @@ function GameBoard({ gameId, playerId, onBack }) {
           <h3>⚔️ Targeting Board</h3>
           <Board 
             gridSize={game.grid_size}
-            // Filter: Only show moves fired BY you
-            moves={moves}
-            ships={[]} // Never show your own ships on the attack board
+            // FIX: Restore the filter so it ONLY shows your own shots
+            moves={moves.filter(m => parseInt(m.player_id) === parseInt(playerId))}
+            ships={[]} 
             isOffensive={true}
             onCellClick={game.status === 'playing' ? handleCellClick : null}
           />
