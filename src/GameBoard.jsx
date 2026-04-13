@@ -70,7 +70,8 @@ function GameBoard({ gameId, playerId, onBack }) {
       if (data.status !== 'waiting_setup') {
         const movesData = await fetchMoves(gameId);
         // Spread into new array to ensure React triggers re-render
-        setMoves(Array.isArray(movesData) ? [...movesData] : []);
+        const actualMoves = Array.isArray(response) ? response : (response.moves || []);
+        setMoves([...actualMoves]);
       }
 
       const me = data.players?.find(p => p.player_id === parseInt(playerId));
@@ -138,6 +139,7 @@ function GameBoard({ gameId, playerId, onBack }) {
             moves={moves.filter(m => parseInt(m.player_id) !== parseInt(playerId))}
             ships={placedShips}
             isOffensive={false}
+            onCellClick={game.status === 'waiting_setup' ? handleCellClick : null}
           />
           {!isReady && (
             <div style={{ marginTop: '10px' }}>
@@ -156,7 +158,7 @@ function GameBoard({ gameId, playerId, onBack }) {
             moves={moves.filter(m => parseInt(m.player_id) === parseInt(playerId))}
             ships={[]} // Never show your own ships on the attack board
             isOffensive={true}
-            onCellClick={handleCellClick}
+            onCellClick={game.status === 'playing' ? handleCellClick : null}
           />
           <div style={{ marginTop: '10px' }}>
             <label>View Opponent Stats: </label>
