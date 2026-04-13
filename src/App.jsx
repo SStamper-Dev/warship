@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createPlayer, createGame, joinGame, fetchGames, fetchPlayerGames } from './api'
+import { createPlayer, createGame, joinGame, fetchGames, fetchPlayerGames, fetchGameDetail } from './api'
 import GameBoard from './GameBoard'
 
 function App() {
@@ -7,6 +7,8 @@ function App() {
   const [username, setUsername] = useState('')
   const [error, setError] = useState(null)
   const [selectedGameId, setSelectedGameId] = useState(null)
+  const [searchId, setSearchId] = useState('')
+  const [previewGame, setPreviewGame] = useState(null)
   
   // FIX: Use brackets [] for useState
   const [allGames, setAllGames] = useState([])
@@ -50,6 +52,23 @@ function App() {
     } catch (err) { setError(err.message) }
   }
 
+  const handleFindGame = async (e) => {
+    e.preventDefault()
+    setError(null)
+    setPreviewGame(null)
+
+    try {
+      const data = await fetchGameDetail(searchId)
+
+      if (data.status === 'finished') {
+        throw new Error("This game has already finished.")
+      }
+      setPreviewGame(data)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   const handleEnterGame = async (gameId, alreadyJoined) => {
     try {
       if (!alreadyJoined) {
@@ -88,6 +107,39 @@ function App() {
         <button onClick={handleCreate}>Create New 8x8 Game</button>
       </div>
 
+      <div className="join-by-id" style={{ margin: '20px 0', border: '1px solid #ccc', padding: '15px' }}>
+  <h3>Join a Match</h3>
+  <form onSubmit={handleFindGame}>
+    <input 
+      type="number" 
+      placeholder="Enter Game ID" 
+      value={searchId} 
+      onChange={e => setSearchId(e.target.value)} 
+      required 
+    />
+    <button type="submit">Find Game</button>
+  </form>
+
+  {previewGame && (
+    <div className="game-preview" style={{ marginTop: '15px', background: '#f9f9f9', padding: '10px' }}>
+      <p><strong>Game #{previewGame.game_id}</strong></p>
+      <ul>
+        <li>Grid Size: {previewGame.grid_size}x{previewGame.grid_size}</li>
+        <li>Status: {previewGame.status}</li>
+        <li>Players Joined: {previewGame.players.length}</li>
+      </ul>
+      
+      <button 
+        onClick={() => handleEnterGame(previewGame.game_id, false)}
+        style={{ background: '#4caf50', color: 'white' }}
+      >
+        Confirm & Join Game
+      </button>
+      <button onClick={() => setPreviewGame(null)} style={{ marginLeft: '10px' }}>Cancel</button>
+    </div>
+  )}
+</div>
+
       <div className="game-dashboard">
         <section style={{ marginBottom: '30px' }}>
           <h3>My Active Games (Database Verified)</h3>
@@ -117,8 +169,8 @@ function App() {
                   disabled={(isFull && !alreadyIn) || g.status === 'finished'}
                   style={{ 
                     marginLeft: '10px',
-                    opacity: (isFull && !alreadIn) ? 0.5 : 1,
-                    cursor: (isFull && !alreadIn) ? 'not-allowed' : 'pointer'
+                    opacity: (isFull && !alreadyIn) ? 0.5 : 1,
+                    cursor: (isFull && !alreadyIn) ? 'not-allowed' : 'pointer'
                   }}
                 >
                     {alreadyIn ? 'Enter' : isFull ? 'Game Full' : 'Join & Play'}
