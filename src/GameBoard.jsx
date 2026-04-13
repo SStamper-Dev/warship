@@ -33,7 +33,7 @@ function GameBoard({ gameId, playerId, onBack }) {
     const row = Math.floor(index / game.grid_size);
     const col = index % game.grid_size;
 
-    if (game?.status == 'waiting_setup') {
+    if (game?.status === 'waiting_setup') {
          const exists = placedShips.find(s => s.row === row && s.col === col);
         if (exists) {
             setPlacedShips(placedShips.filter(s => s !== exists));
