@@ -19,8 +19,10 @@ function GameBoard({ gameId, playerId, onBack }) {
           setMoves(movesData);
         }
         // If the server says we already placed ships, lock the UI
-        const me = data.players.find(p => p.player_id === parseInt(playerId));
-        if (me?.has_placed_ships) setIsReady(true);
+        if (data.players) {
+          const me = data.players.find(p => p.player_id === parseInt(playerId));
+          if (me?.has_placed_ships) setIsReady(true);
+        }
       } catch (err) { setError(err.message); }
     };
 

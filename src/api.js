@@ -61,8 +61,7 @@ export const createGame = async (creatorId, gridSize = 8, maxPlayers = 2) => {
 export const fetchGames = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/games`);
-        if (response.status === 404) return []; // Server doesn't support listing
-        if (!response.ok) throw new Error("Error fetching games");
+        if (!response.ok) return [];
         return await response.json();
     } catch (err) {
         console.warn("Server does not support game listing.");
