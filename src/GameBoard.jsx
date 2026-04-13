@@ -55,7 +55,8 @@ function GameBoard({ gameId, playerId, onBack }) {
         const updatedGame = await fetchGameDetail(gameId);
         const updatedMoves = await fetchMoves(gameId);
         setGame(updatedGame);
-        setMoves(updatedMoves);
+        const movesArray = Array.isArray(updatedMoves) ? updatedMoves : (updatedMoves.moves || []);
+        setMoves(movesArray);
       } catch (err) { alert(err.message); }
     }
   };
