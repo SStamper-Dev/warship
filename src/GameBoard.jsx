@@ -7,25 +7,27 @@ function CombatLog({ moves }) {
 
   // Auto-scroll to bottom whenever a new move is added
   useEffect(() => {
-    endOfLogRef.current?.scrollIntoView({ behavior: "smooth" });
+    endOfLogRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [moves.length]);
 
-  return (
+return (
     <div style={{
-      marginTop: '20px',
-      width: '100%',
-      maxWidth: '800px',
+      width: '280px', 
+      display: 'flex',
+      flexDirection: 'column',
       background: '#1e1e1e',
       border: '2px solid #444',
       borderRadius: '8px',
       padding: '10px',
-      fontFamily: 'monospace'
+      fontFamily: 'monospace',
+      boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)' // Adds a nice inset depth
     }}>
-      <h4 style={{ margin: '0 0 10px 0', color: '#fff', borderBottom: '1px solid #444', paddingBottom: '5px' }}>
+      <h4 style={{ margin: '0 0 10px 0', color: '#fff', borderBottom: '1px solid #444', paddingBottom: '5px', textAlign: 'center' }}>
         📡 COMBAT LOG
       </h4>
-      <div style={{ height: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        {moves.length === 0 ? <span style={{ color: '#888' }}>Awaiting orders...</span> : null}
+      {/* FIX: Gave the scrollable area a larger flexible height */}
+      <div style={{ height: '350px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingRight: '5px' }}>
+        {moves.length === 0 ? <span style={{ color: '#888', textAlign: 'center' }}>Awaiting orders...</span> : null}
         
         {moves.map((m, index) => {
           const time = m.timestamp ? m.timestamp.split(' ')[1] : '00:00:00';
@@ -33,10 +35,11 @@ function CombatLog({ moves }) {
           const isHit = m.result === 'hit';
 
           return (
-            <div key={index} style={{ fontSize: '14px' }}>
-              <span style={{ color: '#888' }}>[{time}]</span>{' '}
-              <span style={{ color: '#64b5f6' }}>Player {m.player_id}</span>{' '}
-              fired at {m.row}, {col} {'-->'} {' '}
+            <div key={index} style={{ fontSize: '13px', lineHeight: '1.4' }}>
+              <span style={{ color: '#888' }}>[{time}]</span><br/>
+              <span style={{ color: '#64b5f6' }}>P{m.player_id}</span>{' '}
+              fired at ({m.row}, {col}) <br/>
+              Result: {' '}
               <span style={{ 
                 color: isHit ? '#f44336' : '#9e9e9e', 
                 fontWeight: isHit ? 'bold' : 'normal' 
@@ -46,13 +49,11 @@ function CombatLog({ moves }) {
             </div>
           );
         })}
-        {/* Invisible div to act as the scroll target */}
         <div ref={endOfLogRef} /> 
       </div>
     </div>
   );
 }
-
 // --- SUB-COMPONENT: GAME OVER SCREEN ---
 function GameOverOverlay({ game, myPlayerId }) {
   const [isVisible, setIsVisible] = useState(true);
@@ -283,7 +284,7 @@ function GameBoard({ gameId, playerId, onBack }) {
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '30px', justifyContent: 'center', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         
         {/* LEFT: DEFENSIVE (Your Ships + All Enemy Fire) */}
         <section>
@@ -303,6 +304,8 @@ function GameBoard({ gameId, playerId, onBack }) {
             </div>
           )}
         </section>
+        
+        <CombatLog moves={moves} />
 
         {/* RIGHT: OFFENSIVE (Strictly Your Fire) */}
         <section>
@@ -327,13 +330,7 @@ function GameBoard({ gameId, playerId, onBack }) {
             </select>
           </div>
         </section>
-
       </div>
-      {/* Combat Log beneath the boards */}
-      <div style={{ display : 'flex', justifyContent: 'center' }}>
-        <CombatLog moves={moves} />
-      </div>
-
       {/* Conditional Game Over Overlay */}
       {game.status === 'finished' && (
         <GameOverOverlay game={game} myPlayerId={playerId} />
