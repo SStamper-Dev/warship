@@ -135,3 +135,13 @@ export const fetchMoves = async (gameId) => {
     if (!response.ok) return [];
     return await response.json(); // Array of { player_id, row, col, result }
 };
+
+// GET /api/players/{id}/stats - Fetch player lifetime stats
+export const fetchPlayerStats = async (playerId) => {
+    const response = await fetch(`${API_BASE_URL}/api/players/${playerId}/stats`);
+    if (!response.ok) {
+        // Return null instead of throwing so one bad ID doesn't crash the leaderboard
+        return null; 
+    }
+    return await response.json(); 
+};

@@ -1,14 +1,17 @@
 import { useRef, useState, useEffect } from 'react';
-import { fetchGameDetail, placeShips, fireShot, fetchMoves } from './api';
+import { fetchGameDetail, placeShips, fireShot, fetchMoves, fetchPlayerStats } from './api';
 
 // --- SUB-COMPONENT: COMBAT LOG ---
 function CombatLog({ moves }) {
-  const endOfLogRef = useRef(null);
+  // 1. Target the scrollable container itself, not a div at the bottom
+  const scrollContainerRef = useRef(null);
 
-  // Auto-scroll to bottom whenever a new move is added
   useEffect(() => {
-    endOfLogRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [moves.length]);
+    // 2. Directly set the inner scroll position to its maximum height
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [moves.length]); // Only trigger when a new move is added
 
   return (
     <div style={{
@@ -24,7 +27,12 @@ function CombatLog({ moves }) {
       <h4 style={{ margin: '0 0 10px 0', color: '#fff', borderBottom: '1px solid #444', paddingBottom: '5px' }}>
         📡 COMBAT LOG
       </h4>
-      <div style={{ height: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      
+      {/* 3. Attach the ref to the div that actually has overflowY: 'auto' */}
+      <div 
+        ref={scrollContainerRef} 
+        style={{ height: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}
+      >
         {moves.length === 0 ? <span style={{ color: '#888' }}>Awaiting orders...</span> : null}
         
         {moves.map((m, index) => {
@@ -46,9 +54,118 @@ function CombatLog({ moves }) {
             </div>
           );
         })}
-        {/* Invisible div to act as the scroll target */}
-        <div ref={endOfLogRef} /> 
+        {/* The invisible target div is no longer needed and has been removed */}
       </div>
+    </div>
+  );
+}
+
+// --- SUB-COMPONENT: LOCAL LEADERBOARD ---
+function LocalLeaderboard({ players }) {
+  const [leaderboard, setLeaderboard] = useState([]);
+
+  // Dependency trick: Only refetch if the actual LIST of players changes, not every 3 seconds
+  const playerIdsString = players?.map(p => p.player_id).sort().join(',');
+
+  useEffect(() => {
+    const loadStats = async () => {
+      if (!players || players.length === 0) return;
+
+      // Promise.all fetches all player stats in parallel
+      const statsPromises = players.map(async (p) => {
+        const stats = await fetchPlayerStats(p.player_id);
+        return { ...p, stats: stats || {} }; // Merge game data with lifetime stats
+      });
+
+      const resolvedData = await Promise.all(statsPromises);
+
+      // Process and Sort the data
+      const processedPlayers = resolvedData.map(p => {
+        const wins = p.stats.wins || 0;
+        const losses = p.stats.losses || 0;
+        const totalFinished = wins + losses;
+        const rawAccuracy = p.stats.accuracy || 0;
+
+        // The Edge Case Logic: "N/A" vs "0%"
+        let winRatioVal = -1; // Default sorting value for N/A
+        let winRatioText = "N/A";
+        
+        if (totalFinished > 0) {
+          winRatioVal = wins / totalFinished;
+          winRatioText = `${(winRatioVal * 100).toFixed(1)}%`;
+        }
+
+        return {
+          id: p.player_id,
+          username: p.username || `Player #${p.player_id}`, // Fallback if backend doesn't send username
+          winRatioVal,
+          winRatioText,
+          accuracyText: `${(rawAccuracy * 100).toFixed(1)}%`,
+          rawAccuracy
+        };
+      });
+
+      // Sort: Highest Win Ratio first. If tied (or both N/A), sort by Accuracy
+      processedPlayers.sort((a, b) => {
+        if (b.winRatioVal === a.winRatioVal) {
+          return b.rawAccuracy - a.rawAccuracy;
+        }
+        return b.winRatioVal - a.winRatioVal;
+      });
+
+      setLeaderboard(processedPlayers);
+    };
+
+    loadStats();
+  }, [playerIdsString]);
+
+  // Olympic Medals and Accents
+  const getRankStyle = (index) => {
+    switch(index) {
+      case 0: return { color: '#ffd700', bg: 'rgba(255, 215, 0, 0.1)', medal: '🥇' }; // Gold
+      case 1: return { color: '#c0c0c0', bg: 'rgba(192, 192, 192, 0.1)', medal: '🥈' }; // Silver
+      case 2: return { color: '#cd7f32', bg: 'rgba(205, 127, 50, 0.1)', medal: '🥉' }; // Bronze
+      default: return { color: '#ffffff', bg: 'transparent', medal: '  ' };
+    }
+  };
+
+  return (
+    <div style={{
+      marginTop: '20px', width: '100%', maxWidth: '800px',
+      background: '#1e1e1e', border: '2px solid #444',
+      borderRadius: '8px', padding: '10px', fontFamily: 'monospace'
+    }}>
+      <h4 style={{ margin: '0 0 10px 0', color: '#fff', borderBottom: '1px solid #444', paddingBottom: '5px' }}>
+        🏆 PRE-GAME INTEL (Lobby Ranking)
+      </h4>
+      
+      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <thead>
+          <tr style={{ color: '#888', borderBottom: '1px solid #333' }}>
+            <th style={{ padding: '8px' }}>Rank</th>
+            <th style={{ padding: '8px' }}>Player</th>
+            <th style={{ padding: '8px' }}>Win Ratio</th>
+            <th style={{ padding: '8px' }}>Accuracy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {leaderboard.map((p, index) => {
+            const style = getRankStyle(index);
+            return (
+              <tr key={p.id} style={{ backgroundColor: style.bg, borderBottom: '1px solid #333' }}>
+                <td style={{ padding: '8px', color: style.color, fontWeight: 'bold' }}>
+                  {style.medal} #{index + 1}
+                </td>
+                <td style={{ padding: '8px', color: '#64b5f6' }}>{p.username}</td>
+                <td style={{ padding: '8px', color: p.winRatioText === 'N/A' ? '#888' : '#fff' }}>
+                  {p.winRatioText}
+                </td>
+                <td style={{ padding: '8px', color: '#fff' }}>{p.accuracyText}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -61,8 +178,6 @@ function GameOverOverlay({ game, myPlayerId }) {
   // Deduce the winner: The player who still has ships afloat
   const winner = game.players.find(p => p.ships_remaining > 0);
   const isWinner = winner?.player_id === parseInt(myPlayerId);
-  
-
 
   return (
     <div style={{
@@ -332,6 +447,10 @@ function GameBoard({ gameId, playerId, onBack }) {
       {/* Combat Log beneath the boards */}
       <div style={{ display : 'flex', justifyContent: 'center' }}>
         <CombatLog moves={moves} />
+      </div>
+
+      <div style={{ display : 'flex', justifyContent: 'center' }}>
+        <LocalLeaderboard players={game.players} />
       </div>
 
       {/* Conditional Game Over Overlay */}
