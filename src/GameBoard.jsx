@@ -1,5 +1,99 @@
 import { useState, useEffect } from 'react';
 import { fetchGameDetail, placeShips, fireShot, fetchMoves } from './api';
+import { useRef, useEffect } from 'react'; // Make sure useRef is imported at the top
+
+// --- SUB-COMPONENT: COMBAT LOG ---
+function CombatLog({ moves }) {
+  const endOfLogRef = useRef(null);
+
+  // Auto-scroll to bottom whenever a new move is added
+  useEffect(() => {
+    endOfLogRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [moves]);
+
+  return (
+    <div style={{
+      marginTop: '20px',
+      width: '100%',
+      maxWidth: '800px',
+      background: '#1e1e1e',
+      border: '2px solid #444',
+      borderRadius: '8px',
+      padding: '10px',
+      fontFamily: 'monospace'
+    }}>
+      <h4 style={{ margin: '0 0 10px 0', color: '#fff', borderBottom: '1px solid #444', paddingBottom: '5px' }}>
+        📡 COMBAT LOG
+      </h4>
+      <div style={{ height: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {moves.length === 0 ? <span style={{ color: '#888' }}>Awaiting orders...</span> : null}
+        
+        {moves.map((m, index) => {
+          const time = m.timestamp ? m.timestamp.split(' ')[1] : '00:00:00';
+          const col = m.column !== undefined ? m.column : m.col;
+          const isHit = m.result === 'hit';
+
+          return (
+            <div key={index} style={{ fontSize: '14px' }}>
+              <span style={{ color: '#888' }}>[{time}]</span>{' '}
+              <span style={{ color: '#64b5f6' }}>Player {m.player_id}</span>{' '}
+              fired at {m.row}, {col} {'-->'} {' '}
+              <span style={{ 
+                color: isHit ? '#f44336' : '#9e9e9e', 
+                fontWeight: isHit ? 'bold' : 'normal' 
+              }}>
+                {m.result.toUpperCase()}
+              </span>
+            </div>
+          );
+        })}
+        {/* Invisible div to act as the scroll target */}
+        <div ref={endOfLogRef} /> 
+      </div>
+    </div>
+  );
+}
+
+// --- SUB-COMPONENT: GAME OVER SCREEN ---
+function GameOverOverlay({ game, myPlayerId }) {
+  // Deduce the winner: The player who still has ships afloat
+  const winner = game.players.find(p => p.ships_remaining > 0);
+  const isWinner = winner?.player_id === parseInt(myPlayerId);
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: isWinner ? 'rgba(255, 215, 0, 0.15)' : 'rgba(255, 0, 0, 0.3)',
+      backdropFilter: 'blur(6px)', // Blurs the game board behind it
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      zIndex: 1000,
+      animation: 'fadeIn 1s ease-in'
+    }}>
+      <h1 style={{
+        fontSize: '6rem', 
+        margin: 0,
+        color: isWinner ? '#ffd700' : '#ff5252',
+        textShadow: isWinner ? '0 0 30px rgba(255, 152, 0, 0.8)' : '0 0 30px rgba(183, 28, 28, 0.8)',
+        animation: isWinner ? 'pulseWinner 2s infinite' : 'none'
+      }}>
+        {isWinner ? 'VICTORY' : 'DEFEAT'}
+      </h1>
+      <h2 style={{ color: 'white', fontSize: '2rem', textShadow: '0 0 10px black' }}>
+        {isWinner ? 'You control the seas.' : `Player ${winner?.player_id} sank your fleet.`}
+      </h2>
+      
+      {/* Injecting pure CSS animations for the dramatic flair */}
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(6px); } }
+        @keyframes pulseWinner { 
+          0% { transform: scale(1); text-shadow: 0 0 20px #ff9800; } 
+          50% { transform: scale(1.05); text-shadow: 0 0 50px #ffd700; } 
+          100% { transform: scale(1); text-shadow: 0 0 20px #ff9800; } 
+        }
+      `}</style>
+    </div>
+  );
+}
 
 // --- SUB-COMPONENT: REUSABLE GRID ---
 function Board({ gridSize, moves, ships, onCellClick, isOffensive, myPlayerId }) {
@@ -212,6 +306,15 @@ function GameBoard({ gameId, playerId, onBack }) {
         </section>
 
       </div>
+      {/* Combat Log beneath the boards */}
+      <div style={{ display : 'flex', justifyContent: 'center' }}>
+        <CombatLog moves={moves} />
+      </div>
+
+      {/* Conditional Game Over Overlay */}
+      {game.status === 'finished' && (
+        <GameOverOverlay game={game} myPlayerId={playerId} />
+      )}
     </div>
   );
 }
