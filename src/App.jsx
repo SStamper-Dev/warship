@@ -9,6 +9,8 @@ function App() {
   const [selectedGameId, setSelectedGameId] = useState(null)
   const [searchId, setSearchId] = useState('')
   const [previewGame, setPreviewGame] = useState(null)
+  const [gridSizeInput, setGridSizeInput] = useState('');
+  const [maxPlayersInput, setMaxPlayersInput] = useState('');
   
   // FIX: Use brackets [] for useState
   const [allGames, setAllGames] = useState([])
@@ -45,10 +47,29 @@ function App() {
     } catch (err) { setError(err.message) }
   }
 
-  const handleCreate = async () => {
+  const handleCreate = async (e) => {
+    e.preventDefault()
+    setError(null)
+
+    const size = parseInt(gridSizeInput) || 8
+    const players = parseInt(maxPlayersInput) || 2
+
+    if (isNaN(size) || size < 5 || size > 15) {
+      setError("Grid size must be a number between 5 and 15.")
+      return
+    }
+    if (isNaN(players) || players < 2 || players > 10) {
+      setError("Max players must be a number between 2 and 10.")
+      return
+    }
     try {
-      await createGame(playerId, 8, 2)
+      const data = await createGame(playerId, size, players)
+
+      setGridSizeInput('')
+      setMaxPlayersInput('')
+
       loadLobby() // Refresh lists immediately
+      alert(`Game #${data.game_id} created! You can find it in the lobby.`)
     } catch (err) { setError(err.message) }
   }
 
@@ -104,8 +125,43 @@ function App() {
       </header>
 
       <div style={{ margin: '20px 0', border: '1px solid #ccc', padding: '15px' }}>
-        <button onClick={handleCreate}>Create New 8x8 Game</button>
-      </div>
+  <h3>Create Custom Match</h3>
+  
+  {/* Flexbox layout to keep items side-by-side and responsive */}
+  <form onSubmit={handleCreate} style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+    
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <label style={{ fontSize: '14px', marginBottom: '5px' }}>Grid Size</label>
+      <input 
+        type="number" 
+        min="5" max="15" 
+        placeholder="5-15" 
+        value={gridSizeInput} 
+        onChange={e => setGridSizeInput(e.target.value)} 
+        required 
+        style={{ width: '80px', padding: '5px' }}
+      />
+    </div>
+
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <label style={{ fontSize: '14px', marginBottom: '5px' }}>Max Players</label>
+      <input 
+        type="number" 
+        min="2" max="10" 
+        placeholder="2-10" 
+        value={maxPlayersInput} 
+        onChange={e => setMaxPlayersInput(e.target.value)} 
+        required 
+        style={{ width: '80px', padding: '5px' }}
+      />
+    </div>
+
+    {/* The Create button pushed slightly down to align with the inputs */}
+    <button type="submit" style={{ background: '#4caf50', color: 'white', marginTop: '22px', padding: '6px 15px' }}>
+      Create New Game
+    </button>
+  </form>
+</div>
 
       <div className="join-by-id" style={{ margin: '20px 0', border: '1px solid #ccc', padding: '15px' }}>
   <h3>Join a Match</h3>
