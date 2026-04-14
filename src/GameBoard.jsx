@@ -18,7 +18,10 @@ function Board({ gridSize, moves, ships, onCellClick, isOffensive, myPlayerId })
   const c = i % gridSize;
 
   // 1. Check for incoming fire (API uses 'column', YAML says 'col')
-  const move = moves?.find(m => parseInt(m.row) === r && parseInt(m.column || m.col) === c);
+  const move = moves?.find(m => {
+    const moveCol = m.col !== undefined ? m.col : m.column; // Support both naming conventions
+    return parseInt(m.row) === r && parseInt(moveCol) === c;
+  });
   
   // 2. Check for your secret ships (from localStorage)
   const hasMyShip = ships?.find(s => parseInt(s.row) === r && parseInt(s.col) === c);
