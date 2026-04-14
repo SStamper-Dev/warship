@@ -165,16 +165,13 @@ function GameBoard({ gameId, playerId, onBack }) {
 
       <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', flexWrap: 'wrap' }}>
         
-        {/* LEFT: DEFENSIVE (Your Ships + Enemy Fire) */}
+        {/* LEFT: DEFENSIVE (Your Ships + All Enemy Fire) */}
         <section>
           <h3>🛡️ Your Board</h3>
           <Board 
             gridSize={game.grid_size}
-            // FIX: Only show moves from OTHERS that actually HIT something
-            moves={moves.filter(m => 
-              parseInt(m.player_id) !== parseInt(playerId) && 
-              m.result === 'hit' // Hides all enemy misses
-            )}
+            // FILTER: Show ALL moves fired by opponents (Hits and Misses)
+            moves={moves.filter(m => parseInt(m.player_id) !== parseInt(playerId))}
             ships={placedShips}
             isOffensive={false}
             onCellClick={game.status === 'waiting_setup' ? handleCellClick : null}
@@ -187,14 +184,14 @@ function GameBoard({ gameId, playerId, onBack }) {
           )}
         </section>
 
-        {/* RIGHT: OFFENSIVE (Your Fire + Targeting) */}
+        {/* RIGHT: OFFENSIVE (Strictly Your Fire) */}
         <section>
           <h3>⚔️ Targeting Board</h3>
           <Board 
             gridSize={game.grid_size}
-            // FIX: Restore the filter so it ONLY shows your own shots
+            // FILTER: Show ONLY moves fired by YOU
             moves={moves.filter(m => parseInt(m.player_id) === parseInt(playerId))}
-            ships={[]} 
+            ships={[]} // Never show ships here
             isOffensive={true}
             onCellClick={game.status === 'playing' ? handleCellClick : null}
           />
