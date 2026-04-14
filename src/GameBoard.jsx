@@ -242,67 +242,79 @@ function Board({ gridSize, moves, ships, onCellClick, isOffensive, myPlayerId })
       border: isOffensive ? '2px solid #f44336' : '2px solid #4caf50'
     }}>
       {Array.from({ length: gridSize * gridSize }).map((_, i) => {
-  const r = Math.floor(i / gridSize);
-  const c = i % gridSize;
+        const r = Math.floor(i / gridSize);
+        const c = i % gridSize;
 
-  // 1. Check for incoming fire (API uses 'column', YAML says 'col')
-  const move = moves?.find(m => {
-    const moveCol = m.col !== undefined ? m.col : m.column; // Support both naming conventions
-    return parseInt(m.row) === r && parseInt(moveCol) === c;
-  });
-  
-  // 2. Check for your secret ships (from localStorage)
-  const hasMyShip = ships?.find(s => parseInt(s.row) === r && parseInt(s.col) === c);
+        // 1. Gather ALL moves that happened on this specific coordinate
+        const cellMoves = moves?.filter(m => parseInt(m.row) === r && parseInt(m.column || m.col) === c) || [];
+        
+        // 2. Categorize the intel
+        const myMove = cellMoves.find(m => parseInt(m.player_id) === parseInt(myPlayerId));
+        const opponentHit = cellMoves.find(m => parseInt(m.player_id) !== parseInt(myPlayerId) && m.result === 'hit');
+        const opponentMiss = cellMoves.find(m => parseInt(m.player_id) !== parseInt(myPlayerId) && m.result === 'miss');
+        
+        const hasMyShip = ships?.find(s => parseInt(s.row) === r && parseInt(s.col) === c);
 
-  // 3. The 3-Color Intel Logic
-  let bgColor = '#bbdefb'; // Default: Blue Water
-  let emoji = null;
+        let bgColor = '#bbdefb'; // Default: Water
+        let emoji = null;
 
-  if (move) {
-    if (move.result === 'hit') {
-      if (hasMyShip && !isOffensive) {
-        // SCENARIO 1: They hit YOU.
-        bgColor = '#f44336'; // Red
-        emoji = '💥';
-      } else {
-        // SCENARIO 2: They hit SOMEONE ELSE. 
-        // You don't have a ship here, but the server reported a hit.
-        bgColor = '#ff9800'; // Orange
-        emoji = '⚠️'; 
-      }
-    } else if (move.result === 'miss') {
-      // SCENARIO 3: They hit nothing.
-      bgColor = '#546e7a'; // Dark Grey
-      emoji = '💧';
-    }
-  } else if (hasMyShip && !isOffensive) {
-    // SCENARIO 4: Your untouched ship hiding in the water
-    bgColor = '#4caf50'; // Green
-  }
+        // --- TARGETING BOARD LOGIC ---
+        if (isOffensive) {
+          if (myMove) {
+            if (myMove.result === 'hit') {
+              bgColor = '#f44336'; // RED: You hit a ship!
+              emoji = '💥';
+            } else if (myMove.result === 'miss') {
+              if (opponentHit) {
+                // BLUE BACKGROUND + CAUTION: You missed, but someone else hit here.
+                bgColor = '#1976d2'; // Strong Blue
+                emoji = '⚠️';
+              } else {
+                bgColor = '#546e7a'; // Normal Grey Miss
+                emoji = '💧';
+              }
+            }
+          } else if (opponentHit) {
+            bgColor = '#ff9800'; // ORANGE CAUTION: Opponent hit here, you haven't fired yet.
+            emoji = '⚠️';
+          }
+        } 
+        // --- DEFENSE BOARD LOGIC ---
+        else {
+          if (opponentHit) {
+            if (hasMyShip) {
+              bgColor = '#f44336'; // RED: They hit YOU.
+              emoji = '💥';
+            } else {
+              bgColor = '#ff9800'; // ORANGE: They hit someone else here.
+              emoji = '⚠️';
+            }
+          } else if (opponentMiss) {
+            bgColor = '#546e7a'; // GREY: Enemy miss.
+            emoji = '💧';
+          } else if (hasMyShip) {
+            bgColor = '#4caf50'; // GREEN: Your safe ship.
+          }
+        }
 
-  return (
-    <div
-      key={i}
-      onClick={() => onCellClick?.(i)}
-      style={{
-        width: '40px', height: '40px',
-        backgroundColor: bgColor,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: onCellClick ? 'pointer' : 'default',
-        border: '1px solid rgba(0,0,0,0.1)',
-        fontSize: '18px',
-        color: 'white' // Ensures emojis/icons pop
-      }}
-      title={
-        move && move.result === 'hit' && !hasMyShip 
-          ? `Player ${move.player_id} hit an unknown ship here!` 
-          : ''
-      }
-    >
-      {emoji}
-    </div>
-  );
-})}
+        return (
+          <div
+            key={i}
+            onClick={() => onCellClick?.(i)}
+            style={{
+              width: '40px', height: '40px',
+              backgroundColor: bgColor,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: onCellClick ? 'pointer' : 'default',
+              border: '1px solid rgba(0,0,0,0.1)',
+              fontSize: '18px',
+              color: 'white'
+            }}
+          >
+            {emoji}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -406,9 +418,10 @@ function GameBoard({ gameId, playerId, onBack }) {
           <Board 
             gridSize={game.grid_size}
             // FILTER: Show ALL moves fired by opponents (Hits and Misses)
-            moves={moves.filter(m => parseInt(m.player_id) !== parseInt(playerId))}
+            moves={moves}
             ships={placedShips}
             isOffensive={false}
+            myPlayerId={playerId}
             onCellClick={game.status === 'waiting_setup' ? handleCellClick : null}
           />
           {!isReady && (
@@ -425,9 +438,10 @@ function GameBoard({ gameId, playerId, onBack }) {
           <Board 
             gridSize={game.grid_size}
             // FILTER: Show ONLY moves fired by YOU
-            moves={moves.filter(m => parseInt(m.player_id) === parseInt(playerId))}
+            moves={moves}
             ships={[]} // Never show ships here
             isOffensive={true}
+            myPlayerId={playerId}
             onCellClick={game.status === 'playing' ? handleCellClick : null}
           />
           <div style={{ marginTop: '10px' }}>
