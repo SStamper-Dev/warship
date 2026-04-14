@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { fetchGameDetail, placeShips, fireShot, fetchMoves } from './api';
-import { useRef, useEffect } from 'react'; // Make sure useRef is imported at the top
 
 // --- SUB-COMPONENT: COMBAT LOG ---
 function CombatLog({ moves }) {
