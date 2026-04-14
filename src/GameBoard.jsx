@@ -271,7 +271,7 @@ function GameBoard({ gameId, playerId, onBack }) {
 
       <div style={{ textAlign: 'center', marginBottom: '10px' }}>
         {game.status === 'playing' ? (
-          game.players.find(p => p.player_id === parseInt(playerId))?.ships_remaining > 0 ? (
+          game.players.find(p => p.player_id === parseInt(playerId))?.ships_remaining < 0 ? (
             <h3 style={{ color: '#9e9e9e' }}> 💀 FLEET DESTROYED (Spectating)</h3>
           ) : (
             <h3 style={{ color: game.current_turn_player_id === parseInt(playerId) ? '#4caf50' : '#f44336' }}>
