@@ -8,7 +8,7 @@ function CombatLog({ moves }) {
   // Auto-scroll to bottom whenever a new move is added
   useEffect(() => {
     endOfLogRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [moves]);
+  }, [moves.length]);
 
   return (
     <div style={{
@@ -55,9 +55,14 @@ function CombatLog({ moves }) {
 
 // --- SUB-COMPONENT: GAME OVER SCREEN ---
 function GameOverOverlay({ game, myPlayerId }) {
+  const [isVisible, setIsVisible] = useState(true);
+  if(!isVisible) return null; // Allows us to unmount after animation
+
   // Deduce the winner: The player who still has ships afloat
   const winner = game.players.find(p => p.ships_remaining > 0);
   const isWinner = winner?.player_id === parseInt(myPlayerId);
+  
+
 
   return (
     <div style={{
@@ -68,9 +73,24 @@ function GameOverOverlay({ game, myPlayerId }) {
       zIndex: 1000,
       animation: 'fadeIn 1s ease-in'
     }}>
+
+      <button
+        onClick={() => setIsVisible(false)}
+        style={{
+          position: 'absolute', top: '30px', right: '40px',
+          background: 'none', color: 'white', border: 'none',
+          fontSize: '40px', cursor: 'pointer', opacity: 0.7,
+          transition: 'opacity 0.2s'
+        }}
+        onMouseOver={(e) => e.target.style.opacity = 1}
+        onMouseOut={(e) => e.target.style.opacity = 0.7}
+      >
+        ✕
+      </button>
       <h1 style={{
         fontSize: '6rem', 
         margin: 0,
+        marginBottom: '20px',
         color: isWinner ? '#ffd700' : '#ff5252',
         textShadow: isWinner ? '0 0 30px rgba(255, 152, 0, 0.8)' : '0 0 30px rgba(183, 28, 28, 0.8)',
         animation: isWinner ? 'pulseWinner 2s infinite' : 'none'
@@ -251,9 +271,13 @@ function GameBoard({ gameId, playerId, onBack }) {
 
       <div style={{ textAlign: 'center', marginBottom: '10px' }}>
         {game.status === 'playing' ? (
-          <h3 style={{ color: game.current_turn_player_id === parseInt(playerId) ? '#4caf50' : '#f44336' }}>
-            {game.current_turn_player_id === parseInt(playerId) ? "✅ YOUR TURN" : "⌛ OPPONENT'S TURN"}
-          </h3>
+          game.players.find(p => p.player_id === parseInt(playerId))?.ships_remaining > 0 ? (
+            <h3 style={{ color: '#9e9e9e' }}> 💀 FLEET DESTROYED (Spectating)</h3>
+          ) : (
+            <h3 style={{ color: game.current_turn_player_id === parseInt(playerId) ? '#4caf50' : '#f44336' }}>
+              {game.current_turn_player_id === parseInt(playerId) ? "✅ YOUR TURN" : "⌛ OPPONENT'S TURN"}
+            </h3>
+          )
         ) : (
           <h3>Status: {game.status.replace('_', ' ').toUpperCase()}.</h3>
         )}
