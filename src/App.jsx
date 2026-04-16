@@ -117,7 +117,7 @@ function App() {
     return (
       <div className="join-screen">
         <h1>Battleship</h1>
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '300px' }}>
+        <form onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '300px' }}>
   <label>Enter Username:</label>
   <input 
     type="text" 
