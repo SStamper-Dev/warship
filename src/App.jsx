@@ -113,34 +113,77 @@ function App() {
     } catch (err) { setError(err.message) }
   }
 
-  if (!playerId) {
-    return (
-      <div className="join-screen">
-        <h1>Battleship</h1>
-        <form onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '300px' }}>
-  <label>Enter Username:</label>
-  <input 
-    type="text" 
-    value={username} 
-    onChange={(e) => setUsername(e.target.value)}
-    placeholder="e.g. Admiral_Clemson81"
-    style={{ padding: '8px', border: usernameError ? '2px solid #f44336' : '1px solid #ccc' }}
-  />
-  
-  {/* The Validation Error Message */}
-  {usernameError && (
-    <span style={{ color: '#f44336', fontSize: '12px', fontWeight: 'bold' }}>
-      ⚠️ {usernameError}
-    </span>
-  )}
+if (!playerId) {
+  return (
+    <div className="join-screen" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',    // Centers horizontally
+      justifyContent: 'center', // Centers vertically
+      minHeight: '100vh',      // Takes up full screen height
+      textAlign: 'center',
+      backgroundColor: '#f4f4f9' // Optional: subtle background color
+    }}>
+      <h1 style={{ fontSize: '3rem', color: '#333', marginBottom: '20px' }}>
+        🚢 Battleship Royale
+      </h1>
 
-  <button type="submit" style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
-    Enter Lobby
-  </button>
-</form>
-      </div>
-    )
-  }
+      <form 
+        onSubmit={handleJoin} 
+        style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '15px', 
+          width: '100%', 
+          maxWidth: '320px',    // Keeps the form from getting too wide
+          padding: '30px',
+          background: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.1)' // Adds a nice floating effect
+        }}
+      >
+        <label style={{ fontWeight: 'bold', color: '#555' }}>Enter Username</label>
+        <input 
+          type="text" 
+          value={username} 
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="e.g. Admiral_Clemson81"
+          style={{ 
+            padding: '12px', 
+            borderRadius: '6px',
+            border: usernameError ? '2px solid #f44336' : '1px solid #ddd',
+            fontSize: '16px'
+          }}
+        />
+        
+        {usernameError && (
+          <span style={{ color: '#f44336', fontSize: '13px', fontWeight: 'bold' }}>
+            ⚠️ {usernameError}
+          </span>
+        )}
+
+        <button 
+          type="submit" 
+          style={{ 
+            padding: '12px', 
+            background: '#007bff', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '6px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            transition: 'background 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.background = '#0056b3'}
+          onMouseOut={(e) => e.target.style.background = '#007bff'}
+        >
+          Enter Lobby
+        </button>
+      </form>
+    </div>
+  );
+}
 
   if (selectedGameId) {
     return (
