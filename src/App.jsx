@@ -46,11 +46,11 @@ function App() {
 
     const regex = /^[a-zA-Z0-9_]+$/
     
-    if(!usernameInput.trim()) {
+    if(!username.trim()) {
       setUsernameError("Username cannot be empty.")
       return
     }
-    if (!regex.test(usernameInput)) {
+    if (!regex.test(username)) {
       setUsernameError("Username can only contain letters, numbers, and underscores.")
       return
     }
@@ -121,8 +121,8 @@ function App() {
   <label>Enter Username:</label>
   <input 
     type="text" 
-    value={usernameInput} 
-    onChange={(e) => setUsernameInput(e.target.value)}
+    value={username} 
+    onChange={(e) => setUsername(e.target.value)}
     placeholder="e.g. Admiral_Clemson81"
     style={{ padding: '8px', border: usernameError ? '2px solid #f44336' : '1px solid #ccc' }}
   />
