@@ -117,10 +117,27 @@ function App() {
     return (
       <div className="join-screen">
         <h1>Battleship</h1>
-        <form onSubmit={handleJoin}>
-          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} required />
-          <button type="submit">Join</button>
-        </form>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '300px' }}>
+  <label>Enter Username:</label>
+  <input 
+    type="text" 
+    value={usernameInput} 
+    onChange={(e) => setUsernameInput(e.target.value)}
+    placeholder="e.g. Admiral_Clemson81"
+    style={{ padding: '8px', border: usernameError ? '2px solid #f44336' : '1px solid #ccc' }}
+  />
+  
+  {/* The Validation Error Message */}
+  {usernameError && (
+    <span style={{ color: '#f44336', fontSize: '12px', fontWeight: 'bold' }}>
+      ⚠️ {usernameError}
+    </span>
+  )}
+
+  <button type="submit" style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
+    Enter Lobby
+  </button>
+</form>
       </div>
     )
   }
