@@ -11,6 +11,7 @@ function App() {
   const [previewGame, setPreviewGame] = useState(null)
   const [gridSizeInput, setGridSizeInput] = useState('');
   const [maxPlayersInput, setMaxPlayersInput] = useState('');
+  const [usernameError, setUsernameError] = useState('');
   
   // FIX: Use brackets [] for useState
   const [allGames, setAllGames] = useState([])
@@ -40,6 +41,19 @@ function App() {
 
   const handleJoin = async (e) => {
     e.preventDefault()
+    setUsernameError('')
+    setError(null)
+
+    const regex = /^[a-zA-Z0-9_]+$/
+    
+    if(!usernameInput.trim()) {
+      setUsernameError("Username cannot be empty.")
+      return
+    }
+    if (!regex.test(usernameInput)) {
+      setUsernameError("Username can only contain letters, numbers, and underscores.")
+      return
+    }
     try {
       const data = await createPlayer(username)
       setPlayerId(data.player_id)
