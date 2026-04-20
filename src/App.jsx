@@ -114,76 +114,38 @@ function App() {
   }
 
 if (!playerId) {
-  return (
-    <div className="join-screen" style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',    // Centers horizontally
-      justifyContent: 'center', // Centers vertically
-      minHeight: '100vh',      // Takes up full screen height
-      textAlign: 'center',
-      backgroundColor: '#f4f4f9' // Optional: subtle background color
-    }}>
-      <h1 style={{ fontSize: '3rem', color: '#333', marginBottom: '20px' }}>
-        🚢 Battleship Royale
-      </h1>
-
-      <form 
-        onSubmit={handleJoin} 
-        style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '15px', 
-          width: '100%', 
-          maxWidth: '320px',    // Keeps the form from getting too wide
-          padding: '30px',
-          background: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.1)' // Adds a nice floating effect
-        }}
-      >
-        <label style={{ fontWeight: 'bold', color: '#555' }}>Enter Username</label>
-        <input 
-          type="text" 
-          value={username} 
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="e.g. Admiral_Clemson81"
-          style={{ 
-            padding: '12px', 
-            borderRadius: '6px',
-            border: usernameError ? '2px solid #f44336' : '1px solid #ddd',
-            fontSize: '16px'
-          }}
-        />
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <h1 style={{ fontSize: '4rem', textShadow: '0 0 20px rgba(100, 255, 218, 0.5)', margin: '0 0 40px 0', letterSpacing: '4px' }}>
+          BATTLESHIP // ROYALE
+        </h1>
         
-        {usernameError && (
-          <span style={{ color: '#f44336', fontSize: '13px', fontWeight: 'bold' }}>
-            ⚠️ {usernameError}
-          </span>
-        )}
+        <form className="glass-panel" onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '350px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ letterSpacing: '2px', fontSize: '0.9rem', color: '#8892b0' }}>OPERATIVE ID (USERNAME)</label>
+            <input 
+              className="radar-input"
+              type="text" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="e.g. Admiral_Clemson81"
+              style={{ border: usernameError ? '1px solid #FF4C4C' : '' }}
+            />
+          </div>
+          
+          {usernameError && (
+            <span style={{ color: '#FF4C4C', fontSize: '14px', textShadow: '0 0 5px rgba(255, 76, 76, 0.4)' }}>
+              ⚠ {usernameError}
+            </span>
+          )}
 
-        <button 
-          type="submit" 
-          style={{ 
-            padding: '12px', 
-            background: '#007bff', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '6px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            transition: 'background 0.2s'
-          }}
-          onMouseOver={(e) => e.target.style.background = '#0056b3'}
-          onMouseOut={(e) => e.target.style.background = '#007bff'}
-        >
-          Enter Lobby
-        </button>
-      </form>
-    </div>
-  );
-}
+          <button type="submit" className="radar-btn" style={{ marginTop: '10px' }}>
+            INITIALIZE UPLINK
+          </button>
+        </form>
+      </div>
+    )
+  }
 
   if (selectedGameId) {
     return (
@@ -191,127 +153,116 @@ if (!playerId) {
     )
   }
 
-  return (
-    <div className="lobby-screen" style={{ padding: '20px' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <h2>Lobby (Player #{playerId})</h2>
-        <button onClick={() => { localStorage.removeItem('battleship_player_id'); setPlayerId(null); }} style={{ background: '#ff4444', color: 'white' }}>Logout</button>
+return (
+    <div style={{ padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' }}>
+      
+      {/* HEADER */}
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', borderBottom: '1px solid rgba(100, 255, 218, 0.2)', paddingBottom: '20px' }}>
+        <h2 style={{ margin: 0, textShadow: '0 0 10px rgba(100, 255, 218, 0.4)' }}>
+          CIC TERMINAL // OPERATIVE #{playerId}
+        </h2>
+        <button className="radar-btn danger-btn" onClick={() => { localStorage.removeItem('battleship_player_id'); setPlayerId(null); }}>
+          DISCONNECT
+        </button>
       </header>
 
-      <div style={{ margin: '20px 0', border: '1px solid #ccc', padding: '15px' }}>
-  <h3>Create Custom Match</h3>
-  
-  {/* Flexbox layout to keep items side-by-side and responsive */}
-  <form onSubmit={handleCreate} style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
-    
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <label style={{ fontSize: '14px', marginBottom: '5px' }}>Grid Size</label>
-      <input 
-        type="number" 
-        min="5" max="15" 
-        placeholder="5-15" 
-        value={gridSizeInput} 
-        onChange={e => setGridSizeInput(e.target.value)} 
-        required 
-        style={{ width: '80px', padding: '5px' }}
-      />
-    </div>
+      {error && <div className="glass-panel" style={{ borderColor: '#FF4C4C', color: '#FF4C4C' }}>⚠ {error}</div>}
 
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <label style={{ fontSize: '14px', marginBottom: '5px' }}>Max Players</label>
-      <input 
-        type="number" 
-        min="2" max="10" 
-        placeholder="2-10" 
-        value={maxPlayersInput} 
-        onChange={e => setMaxPlayersInput(e.target.value)} 
-        required 
-        style={{ width: '80px', padding: '5px' }}
-      />
-    </div>
+      {/* CREATE & JOIN ROW */}
+      <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap', marginBottom: '25px' }}>
+        
+        {/* CREATE GAME PANEL */}
+        <div className="glass-panel" style={{ flex: '1 1 400px', margin: 0 }}>
+          <h3 style={{ marginTop: 0, color: '#e2e8f0' }}>&gt; CONFIGURE NEW ENGAGEMENT</h3>
+          <form onSubmit={handleCreate} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <label style={{ fontSize: '12px', color: '#8892b0' }}>GRID SIZE (5-15)</label>
+              <input className="radar-input" type="number" min="5" max="15" value={gridSizeInput} onChange={e => setGridSizeInput(e.target.value)} required style={{ width: '100px' }}/>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <label style={{ fontSize: '12px', color: '#8892b0' }}>MAX FLEETS (2-10)</label>
+              <input className="radar-input" type="number" min="2" max="10" value={maxPlayersInput} onChange={e => setMaxPlayersInput(e.target.value)} required style={{ width: '100px' }}/>
+            </div>
+            <button className="radar-btn" type="submit">DEPLOY</button>
+          </form>
+        </div>
 
-    {/* The Create button pushed slightly down to align with the inputs */}
-    <button type="submit" style={{ background: '#4caf50', color: 'white', marginTop: '22px', padding: '6px 15px' }}>
-      Create New Game
-    </button>
-  </form>
-</div>
+        {/* FIND GAME PANEL */}
+        <div className="glass-panel" style={{ flex: '1 1 300px', margin: 0 }}>
+          <h3 style={{ marginTop: 0, color: '#e2e8f0' }}>&gt; LOCATE ENGAGEMENT</h3>
+          <form onSubmit={handleFindGame} style={{ display: 'flex', gap: '10px' }}>
+            <input className="radar-input" type="number" placeholder="MATCH ID" value={searchId} onChange={e => setSearchId(e.target.value)} required style={{ flex: 1 }}/>
+            <button className="radar-btn" type="submit">SCAN</button>
+          </form>
 
-      <div className="join-by-id" style={{ margin: '20px 0', border: '1px solid #ccc', padding: '15px' }}>
-  <h3>Join a Match</h3>
-  <form onSubmit={handleFindGame}>
-    <input 
-      type="number" 
-      placeholder="Enter Game ID" 
-      value={searchId} 
-      onChange={e => setSearchId(e.target.value)} 
-      required 
-    />
-    <button type="submit">Find Game</button>
-  </form>
+          {previewGame && (
+            <div style={{ marginTop: '20px', padding: '15px', background: 'rgba(2, 6, 23, 0.5)', borderLeft: '3px solid #64FFDA' }}>
+              <p style={{ margin: '0 0 10px 0' }}><strong>TARGET: MATCH #{previewGame.game_id}</strong></p>
+              <div style={{ color: '#8892b0', fontSize: '0.9rem', marginBottom: '15px' }}>
+                <div>AREA: {previewGame.grid_size}x{previewGame.grid_size}</div>
+                <div>STATUS: {previewGame.status.toUpperCase()}</div>
+                <div>FLEETS: {previewGame.players.length} DETECTED</div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="radar-btn" onClick={() => handleEnterGame(previewGame.game_id, false)}>JOIN</button>
+                <button className="radar-btn danger-btn" onClick={() => setPreviewGame(null)}>ABORT</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
-  {previewGame && (
-    <div className="game-preview" style={{ marginTop: '15px', background: '#f9f9f9', padding: '10px' }}>
-      <p><strong>Game #{previewGame.game_id}</strong></p>
-      <ul>
-        <li>Grid Size: {previewGame.grid_size}x{previewGame.grid_size}</li>
-        <li>Status: {previewGame.status}</li>
-        <li>Players Joined: {previewGame.players.length}</li>
-      </ul>
-      
-      <button 
-        onClick={() => handleEnterGame(previewGame.game_id, false)}
-        style={{ background: '#4caf50', color: 'white' }}
-      >
-        Confirm & Join Game
-      </button>
-      <button onClick={() => setPreviewGame(null)} style={{ marginLeft: '10px' }}>Cancel</button>
-    </div>
-  )}
-</div>
-
-      <div className="game-dashboard">
-        <section style={{ marginBottom: '30px' }}>
-          <h3>My Active Games (Database Verified)</h3>
+      {/* GAMES DASHBOARD */}
+      <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap' }}>
+        
+        {/* ACTIVE GAMES */}
+        <section className="glass-panel" style={{ flex: '1 1 300px' }}>
+          <h3 style={{ marginTop: 0, color: '#e2e8f0', borderBottom: '1px solid rgba(100,255,218,0.2)', paddingBottom: '10px' }}>
+            &gt; MY ACTIVE DEPLOYMENTS
+          </h3>
           {myGames.length > 0 ? (
             myGames.map(g => (
-              <div key={g.game_id} style={{ border: '1px solid #ddd', padding: '10px', margin: '5px 0' }}>
-                Game #{g.game_id} ({g.status})
-                <button onClick={() => handleEnterGame(g.game_id, true)} style={{ marginLeft: '10px' }}>Enter</button>
+              <div key={g.game_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'rgba(2, 6, 23, 0.4)', marginBottom: '8px', borderLeft: '2px solid #64FFDA' }}>
+                <span>MATCH #{g.game_id} <span style={{ color: '#8892b0', fontSize: '0.8rem' }}>({g.status})</span></span>
+                <button className="radar-btn" onClick={() => handleEnterGame(g.game_id, true)} style={{ padding: '6px 12px', fontSize: '0.8rem' }}>RESUME</button>
               </div>
             ))
-          ) : <p>You aren't in any active matches.</p>}
+          ) : <p style={{ color: '#8892b0' }}>No active deployments found.</p>}
         </section>
 
-        <section>
-          <h3>Browse All Games</h3>
-          {allGames.length > 0 ? (
-            allGames.map(g => {
-              // logic for button state
-              const isFull = g.current_players >= g.max_players
-              const alreadyIn = myGames.some(mg => mg.game_id === g.game_id)
+        {/* ALL GAMES */}
+        <section className="glass-panel" style={{ flex: '2 1 400px' }}>
+          <h3 style={{ marginTop: 0, color: '#e2e8f0', borderBottom: '1px solid rgba(100,255,218,0.2)', paddingBottom: '10px' }}>
+            &gt; GLOBAL SENSOR NETWORK
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
+            {allGames.length > 0 ? (
+              allGames.map(g => {
+                const isFull = g.current_players >= g.max_players;
+                const alreadyIn = myGames.some(mg => mg.game_id === g.game_id);
 
-              return(
-                <div key={g.game_id} style={{ border: '1px solid #ddd', padding: '10px', margin: '5px 0' }}>
-                  Game #{g.game_id} - {g.current_players}/{g.max_players} Players
-                  <button onClick={() => handleEnterGame(g.game_id, alreadyIn)} 
-                  //Disable if full and not already in, or if game is finished
-                  disabled={(isFull && !alreadyIn) || g.status === 'finished'}
-                  style={{ 
-                    marginLeft: '10px',
-                    opacity: (isFull && !alreadyIn) ? 0.5 : 1,
-                    cursor: (isFull && !alreadyIn) ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                    {alreadyIn ? 'Enter' : isFull ? 'Game Full' : 'Join & Play'}
-                  </button>
-                </div>
-              )
-            })
-          ) : <p>No games available to join.</p>}
+                return (
+                  <div key={g.game_id} style={{ padding: '15px', background: 'rgba(2, 6, 23, 0.4)', border: '1px solid rgba(100,255,218,0.1)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div>
+                      <div style={{ fontSize: '1.1rem', marginBottom: '5px' }}>MATCH #{g.game_id}</div>
+                      <div style={{ color: '#8892b0', fontSize: '0.8rem' }}>FLEETS: {g.current_players}/{g.max_players}</div>
+                    </div>
+                    <button 
+                      className="radar-btn"
+                      onClick={() => handleEnterGame(g.game_id, alreadyIn)} 
+                      disabled={(isFull && !alreadyIn) || g.status === 'finished'}
+                      style={{ padding: '8px', fontSize: '0.8rem', width: '100%' }}
+                    >
+                      {alreadyIn ? 'RESUME' : isFull ? 'SECTOR FULL' : g.status === 'finished' ? 'CONCLUDED' : 'JOIN MATCH'}
+                    </button>
+                  </div>
+                )
+              })
+            ) : <p style={{ color: '#8892b0' }}>Network clear. No matches detected.</p>}
+          </div>
         </section>
       </div>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+
     </div>
   )
 }
