@@ -2,6 +2,29 @@ import { useState, useEffect } from 'react'
 import { createPlayer, loginPlayer, createGame, joinGame, fetchGames, fetchPlayerGames, fetchGameDetail } from './api'
 import GameBoard from './GameBoard'
 
+// Add this above function App() { ... }
+const SERVERS = [
+  { name: "Team0x00", url: "https://battleship-server-18q1.onrender.com" },
+  { name: "Team0x01", url: "https://battleship.koon.us" },
+  { name: "Team0x02", url: "https://finalproject-virusoutbreak-3bwa.onrender.com" },
+  { name: "Team0x03", url: "https://finalproject3750.onrender.com" },
+  { name: "Team0x04", url: "https://webdevgroupproj.onrender.com" },
+  { name: "Team0x05", url: "https://cpsc3720finalproject.onrender.com" },
+  { name: "Team0x06", url: "https://three750final.onrender.com" },
+  { name: "Team0x07", url: "https://persistent-waters.onrender.com" },
+  { name: "Team0x08", url: "https://p01--backend--zm8jxh5c8bph.code.run" },
+  { name: "Team0x09", url: "https://lightslategray-dogfish-869967.hostingersite.com" },
+  { name: "Team0x0A", url: "https://battleship-1-qpm6.onrender.com" },
+  { name: "Team0x0B", url: "https://cpsc.loosesocket.com" },
+  { name: "Team0x0C", url: "https://battleship-advanced.onrender.com" },
+  { name: "Team0x0D", url: "https://vibe-hunter.com" },
+  { name: "Team0x0E", url: "https://cpsc3750-battleshipproject.onrender.com" },
+  { name: "Team0x0F", url: "https://cpsc-3750-battleship-final-project-phase1.onrender.com" },
+  { name: "Team0x10 (OURS)", url: "https://capstone3750-production.up.railway.app" },
+  { name: "Team0x11", url: "https://battleship-cpsc3750.onrender.com" },
+  { name: "Team0x12", url: "https://final-project-7xwd.onrender.com" },
+];
+
 function App() {
   const [playerId, setPlayerId] = useState(localStorage.getItem('battleship_player_id'))
   const [username, setUsername] = useState('')
@@ -19,6 +42,25 @@ function App() {
   // FIX: Use brackets [] for useState
   const [allGames, setAllGames] = useState([])
   const [myGames, setMyGames] = useState([])
+
+  const [serverUrl, setServerUrl] = useState(
+    localStorage.getItem('battleship_server_url') || "https://capstone3750-production.up.railway.app"
+  );
+
+  const handleServerChange = (e) => {
+    const newUrl = e.target.value;
+    setServerUrl(newUrl);
+    localStorage.setItem('battleship_server_url', newUrl);
+    
+    // HARD LOGOUT: Clear player data when switching networks
+    localStorage.removeItem('battleship_player_id');
+    setPlayerId(null);
+    setUsername('');
+    setLoginUsername('');
+    setError(null);
+    setLoginError(null);
+    setUsernameError(null);
+  };
 
   // The Lobby Fetcher
   const loadLobby = async () => {
@@ -148,6 +190,24 @@ if (!playerId) {
           BATTLESHIP // ROYALE
         </h1>
         
+        {/* --- NEW SERVER SELECTOR --- */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '35px', width: '100%', maxWidth: '350px' }}>
+          <label style={{ letterSpacing: '2px', fontSize: '0.9rem', color: 'var(--muted-text)' }}>NETWORK UPLINK TARGET</label>
+          <select 
+            className="radar-input" 
+            value={serverUrl} 
+            onChange={handleServerChange}
+            style={{ width: '100%', cursor: 'pointer', textAlign: 'center', appearance: 'none' }}
+          >
+            {SERVERS.map(server => (
+              <option key={server.name} value={server.url}>
+                {server.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {/* --------------------------- */}
+
         {/* PRIMARY FORM: NEW REGISTRATION */}
         <form className="glass-panel" onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '350px', marginBottom: '15px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

@@ -1,10 +1,11 @@
-const API_BASE_URL = "https://capstone3750-production.up.railway.app";
-
-export default API_BASE_URL;
+export const getApiBaseUrl = () => {
+    // Check storage first, fallback to Team0x10 if nothing is selected yet
+    return localStorage.getItem('battleship_server_url') || "https://capstone3750-production.up.railway.app";
+};
 
 export const createPlayer = async (username) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/players`, {
+        const response = await fetch(`${getApiBaseUrl()}/api/players`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -30,7 +31,7 @@ export const createPlayer = async (username) => {
 // Custom Login Route
 export const loginPlayer = async (username) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/players/login`, {
+        const response = await fetch(`${getApiBaseUrl()}/api/players/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: username }),
@@ -52,7 +53,7 @@ export const loginPlayer = async (username) => {
 
 // Get a single game's details (Standard YAML requirement)
 export const fetchGameDetail = async (gameId) => {
-    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}`);
+    const response = await fetch(`${getApiBaseUrl()}/api/games/${gameId}`);
     if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Game not found");
@@ -62,7 +63,7 @@ export const fetchGameDetail = async (gameId) => {
 
 // Create a new game
 export const createGame = async (creatorId, gridSize = 8, maxPlayers = 2) => {
-    const response = await fetch(`${API_BASE_URL}/api/games`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/games`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -83,7 +84,7 @@ export const createGame = async (creatorId, gridSize = 8, maxPlayers = 2) => {
 // src/api.js - Universal Friendly
 export const fetchGames = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/games`);
+        const response = await fetch(`${getApiBaseUrl()}/api/games`);
         if (!response.ok) return [];
         return await response.json();
     } catch (err) {
@@ -95,7 +96,7 @@ export const fetchGames = async () => {
 // Fetch games specifically for the current player (Safe/Try-Catch)
 export const fetchPlayerGames = async (playerId) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/players/${playerId}/games`);
+        const response = await fetch(`${getApiBaseUrl()}/api/players/${playerId}/games`);
         if (!response.ok) return []; 
         return await response.json();
     } catch (err) {
@@ -105,7 +106,7 @@ export const fetchPlayerGames = async (playerId) => {
 
 // Join a game (YAML Standard)
 export const joinGame = async (gameId, playerId) => {
-    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/join`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/games/${gameId}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ player_id: parseInt(playerId) }),
@@ -117,7 +118,7 @@ export const joinGame = async (gameId, playerId) => {
 
 // POST /api/games/{id}/place - Place ships
 export const placeShips = async (gameId, playerId, ships) => {
-    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/place`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/games/${gameId}/place`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -135,7 +136,7 @@ export const placeShips = async (gameId, playerId, ships) => {
 
 // POST /api/games/{id}/fire - Standard Combat
 export const fireShot = async (gameId, playerId, row, col) => {
-    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/fire`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/games/${gameId}/fire`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -154,14 +155,14 @@ export const fireShot = async (gameId, playerId, row, col) => {
 
 // GET /api/games/{id}/moves - Move history
 export const fetchMoves = async (gameId) => {
-    const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/moves`);
+    const response = await fetch(`${getApiBaseUrl()}/api/games/${gameId}/moves`);
     if (!response.ok) return [];
     return await response.json(); // Array of { player_id, row, col, result }
 };
 
 // GET /api/players/{id}/stats - Fetch player lifetime stats
 export const fetchPlayerStats = async (playerId) => {
-    const response = await fetch(`${API_BASE_URL}/api/players/${playerId}/stats`);
+    const response = await fetch(`${getApiBaseUrl()}/api/players/${playerId}/stats`);
     if (!response.ok) {
         // Return null instead of throwing so one bad ID doesn't crash the leaderboard
         return null; 
