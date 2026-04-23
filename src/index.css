@@ -1,31 +1,60 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
+/* --- THEME VARIABLES --- */
+:root {
+  --bg-ocean: #020617;
+  --radar-cyan: #64FFDA;
+  --glass-bg: rgba(30, 41, 59, 0.4);
+  --glass-border: rgba(100, 255, 218, 0.15);
+  --input-bg: rgba(2, 6, 23, 0.6);
+  --danger-red: #FF4C4C;
+  --muted-text: #8892b0;
+  --shadow-glow: rgba(100, 255, 218, 0.5);
+  --panel-shadow: rgba(0, 0, 0, 0.5);
+}
+
+/* Naval Blueprint (Light Mode) */
+[data-theme='light'] {
+  --bg-ocean: #e2e8f0;         /* Crisp morning deck / Blueprint paper */
+  --radar-cyan: #0f172a;       /* Deep navy ink */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(15, 23, 42, 0.2);
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --danger-red: #dc2626;
+  --muted-text: #475569;
+  --shadow-glow: rgba(15, 23, 42, 0.2);
+  --panel-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* --- GLOBAL STYLES --- */
 body {
-  background-color: #020617; /* Deep Ocean Void */
-  color: #64FFDA; /* Radar Cyan */
+  background-color: var(--bg-ocean);
+  color: var(--radar-cyan);
   font-family: 'Share Tech Mono', monospace;
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Glassmorphism Panel (The UI Hologram) */
+/* Glassmorphism Panel */
 .glass-panel {
-  background: rgba(30, 41, 59, 0.4);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(100, 255, 218, 0.15);
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px var(--panel-shadow);
   padding: 25px;
   margin-bottom: 25px;
+  transition: all 0.3s ease;
 }
 
 /* Tactical Radar Buttons */
 .radar-btn {
-  background: rgba(100, 255, 218, 0.05);
-  color: #64FFDA;
-  border: 1px solid #64FFDA;
+  background: transparent;
+  color: var(--radar-cyan);
+  border: 1px solid var(--radar-cyan);
   border-radius: 4px;
   padding: 10px 20px;
   cursor: pointer;
@@ -37,34 +66,34 @@ body {
 }
 
 .radar-btn:hover:not(:disabled) {
-  background: #64FFDA;
-  color: #020617;
-  box-shadow: 0 0 15px rgba(100, 255, 218, 0.6);
+  background: var(--radar-cyan);
+  color: var(--bg-ocean);
+  box-shadow: 0 0 15px var(--shadow-glow);
 }
 
 .radar-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
-  border-color: #555;
-  color: #555;
+  border-color: var(--muted-text);
+  color: var(--muted-text);
 }
 
-/* Critical Action Button (Logout/Cancel) */
+/* Critical Action Button */
 .danger-btn {
-  border-color: #FF4C4C;
-  color: #FF4C4C;
+  border-color: var(--danger-red);
+  color: var(--danger-red);
 }
 .danger-btn:hover {
-  background: #FF4C4C;
-  color: #020617;
-  box-shadow: 0 0 15px rgba(255, 76, 76, 0.6);
+  background: var(--danger-red);
+  color: var(--bg-ocean);
+  box-shadow: 0 0 15px rgba(255, 76, 76, 0.4);
 }
 
 /* Terminal Inputs */
 .radar-input {
-  background: rgba(2, 6, 23, 0.6);
-  border: 1px solid rgba(100, 255, 218, 0.3);
-  color: #64FFDA;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--radar-cyan);
   padding: 12px;
   border-radius: 4px;
   font-family: 'Share Tech Mono', monospace;
@@ -74,10 +103,6 @@ body {
 
 .radar-input:focus {
   outline: none;
-  border-color: #64FFDA;
-  box-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
-}
-
-.radar-input::placeholder {
-  color: rgba(100, 255, 218, 0.3);
+  border-color: var(--radar-cyan);
+  box-shadow: 0 0 10px var(--shadow-glow);
 }
