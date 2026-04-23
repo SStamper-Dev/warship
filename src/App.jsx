@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createPlayer, createGame, joinGame, fetchGames, fetchPlayerGames, fetchGameDetail } from './api'
+import { createPlayer, loginPlayer, createGame, joinGame, fetchGames, fetchPlayerGames, fetchGameDetail } from './api'
 import GameBoard from './GameBoard'
 
 function App() {
@@ -12,6 +12,8 @@ function App() {
   const [gridSizeInput, setGridSizeInput] = useState('');
   const [maxPlayersInput, setMaxPlayersInput] = useState('');
   const [usernameError, setUsernameError] = useState('');
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [isLightMode, setIsLightMode] = useState(false);
   
   // FIX: Use brackets [] for useState
@@ -68,6 +70,23 @@ function App() {
       setPlayerId(data.player_id)
       localStorage.setItem('battleship_player_id', data.player_id)
     } catch (err) { setError(err.message) }
+  }
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setLoginError('')
+
+    if(!loginUsername.trim()) {
+      setLoginError("Operative ID cannot be empty.")
+      return
+    }
+
+    try {
+      const data = await loginPlayer(loginUsername)
+      setPlayerId(data.player_id)
+    } catch (err) { 
+      setLoginError(err.message) 
+    }
   }
 
   const handleCreate = async (e) => {
@@ -129,9 +148,10 @@ if (!playerId) {
           BATTLESHIP // ROYALE
         </h1>
         
-        <form className="glass-panel" onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '350px' }}>
+        {/* PRIMARY FORM: NEW REGISTRATION */}
+        <form className="glass-panel" onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '350px', marginBottom: '15px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{ letterSpacing: '2px', fontSize: '0.9rem', color: 'var(--muted-text)' }}>OPERATIVE ID (USERNAME)</label>
+            <label style={{ letterSpacing: '2px', fontSize: '0.9rem', color: 'var(--muted-text)' }}>REGISTER NEW OPERATIVE</label>
             <input 
               className="radar-input"
               type="text" 
@@ -152,6 +172,51 @@ if (!playerId) {
             INITIALIZE UPLINK
           </button>
         </form>
+
+        {/* SECONDARY FORM: RETURNING LOGIN (Muted Aesthetic) */}
+        <form 
+          className="glass-panel" 
+          onSubmit={handleLogin} 
+          style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '15px', 
+            width: '100%', 
+            maxWidth: '350px', 
+            background: 'transparent', // Removes the glass background
+            border: 'none',            // Removes the glowing border
+            boxShadow: 'none',         // Removes the drop shadow
+            padding: '10px 25px'
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.7 }}>
+            <label style={{ letterSpacing: '2px', fontSize: '0.8rem', color: 'var(--muted-text)' }}>RETURNING OPERATIVE LOGIN</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <input 
+                className="radar-input"
+                type="text" 
+                value={loginUsername} 
+                onChange={(e) => setLoginUsername(e.target.value)}
+                placeholder="Existing ID"
+                style={{ flex: 1, border: loginError ? '1px solid var(--danger-red)' : '1px solid var(--muted-text)' }}
+              />
+              <button 
+                type="submit" 
+                className="radar-btn" 
+                style={{ border: '1px solid var(--muted-text)', color: 'var(--muted-text)' }}
+              >
+                RECONNECT
+              </button>
+            </div>
+          </div>
+
+          {loginError && (
+            <span style={{ color: 'var(--danger-red)', fontSize: '13px' }}>
+              ⚠ {loginError}
+            </span>
+          )}
+        </form>
+
       </div>
     )
   }

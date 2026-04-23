@@ -27,6 +27,29 @@ export const createPlayer = async (username) => {
     }
 };
 
+// Custom Login Route
+export const loginPlayer = async (username) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/players/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('battleship_player_id', data.player_id);
+            return data;
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to login");
+        }
+    } catch (error) {
+        console.error("Login Error:", error);
+        throw error;
+    }
+};
+
 // Get a single game's details (Standard YAML requirement)
 export const fetchGameDetail = async (gameId) => {
     const response = await fetch(`${API_BASE_URL}/api/games/${gameId}`);
