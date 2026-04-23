@@ -327,6 +327,7 @@ function GameBoard({ gameId, playerId, onBack }) {
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(null);
   const [selectedOpponentId, setSelectedOpponentId] = useState('');
+  const [opponentStats, setOpponentStats] = useState(null);
 
   const shipKey = `ships_${gameId}_${playerId}`; // Multi-game persistence
 
@@ -356,6 +357,24 @@ function GameBoard({ gameId, playerId, onBack }) {
     const interval = setInterval(loadData, 3000);
     return () => clearInterval(interval);
   }, [gameId, playerId]);
+
+  useEffect(() => {
+    if (!selectedOpponentId) {
+      setOpponentStats(null);
+      return;
+    }
+    
+    const loadStats = async () => {
+      try {
+        const data = await fetchPlayerStats(selectedOpponentId);
+        setOpponentStats(data);
+      } catch (err) {
+        console.error("Failed to fetch opponent stats", err);
+      }
+    };
+    
+    loadStats();
+  }, [selectedOpponentId, moves.length]);
 
   const handleCellClick = async (index) => {
     const r = Math.floor(index / game.grid_size);
@@ -455,6 +474,24 @@ function GameBoard({ gameId, playerId, onBack }) {
               ))}
             </select>
           </div>
+          {/* LIVE INTELLIGENCE READOUT */}
+          {opponentStats && (
+            <div className="glass-panel" style={{ marginTop: '15px', padding: '15px', background: 'var(--input-bg)' }}>
+              <h4 style={{ margin: '0 0 10px 0', color: 'var(--radar-cyan)' }}>
+                TARGET INTEL: PLAYER #{selectedOpponentId}
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', color: 'var(--muted-text)', fontSize: '0.85rem' }}>
+                <div>GAMES: <span style={{color: 'var(--radar-cyan)'}}>{opponentStats.games_played}</span></div>
+                <div>ACCURACY: <span style={{color: 'var(--radar-cyan)'}}>{(opponentStats.accuracy * 100).toFixed(1)}%</span></div>
+                
+                <div>WINS: <span style={{color: 'var(--radar-cyan)'}}>{opponentStats.wins}</span></div>
+                <div>SHOTS: <span style={{color: 'var(--radar-cyan)'}}>{opponentStats.total_shots}</span></div>
+                
+                <div>LOSSES: <span style={{color: 'var(--danger-red)'}}>{opponentStats.losses}</span></div>
+                <div>HITS: <span style={{color: 'var(--radar-cyan)'}}>{opponentStats.total_hits}</span></div>
+              </div>
+            </div>
+          )}
         </section>
 
       </div>

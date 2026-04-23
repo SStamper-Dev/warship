@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createPlayer, loginPlayer, createGame, joinGame, fetchGames, fetchPlayerGames, fetchGameDetail } from './api'
+import { createPlayer, loginPlayer, createGame, joinGame, fetchGames, fetchPlayerGames, fetchGameDetail, fetchPlayerStats } from './api'
 import GameBoard from './GameBoard'
 
 // Add this above function App() { ... }
@@ -42,6 +42,7 @@ function App() {
   // FIX: Use brackets [] for useState
   const [allGames, setAllGames] = useState([])
   const [myGames, setMyGames] = useState([])
+  const [myStats, setMyStats] = useState(null)
 
   const [serverUrl, setServerUrl] = useState(
     localStorage.getItem('battleship_server_url') || "https://capstone3750-production.up.railway.app"
@@ -70,6 +71,10 @@ function App() {
 
       const personalData = await fetchPlayerGames(playerId)
       if (personalData) setMyGames(personalData)
+
+      const statsData = await fetchPlayerStats(playerId)
+      if (statsData) setMyStats(statsData)
+      
     } catch (err) {
       console.error("Lobby Load Error:", err)
     }
@@ -306,6 +311,23 @@ return (
       </header>
 
       {error && <div className="glass-panel" style={{ borderColor: 'var(--danger-red)', color: 'var(--danger-red)' }}>⚠ {error}</div>}
+
+      {/* OPERATIVE SERVICE RECORD */}
+      {myStats && (
+        <div className="glass-panel" style={{ borderLeft: '4px solid var(--radar-cyan)', padding: '15px 25px' }}>
+          <h3 style={{ marginTop: 0, color: 'var(--radar-cyan)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
+            &gt; OPERATIVE SERVICE RECORD
+          </h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', color: 'var(--muted-text)', fontSize: '1rem' }}>
+            <div>GAMES: <span style={{ color: 'var(--radar-cyan)', fontWeight: 'bold' }}>{myStats.games_played}</span></div>
+            <div>WINS: <span style={{ color: 'var(--radar-cyan)', fontWeight: 'bold' }}>{myStats.wins}</span></div>
+            <div>LOSSES: <span style={{ color: 'var(--danger-red)', fontWeight: 'bold' }}>{myStats.losses}</span></div>
+            <div>SHOTS: <span style={{ color: 'var(--radar-cyan)', fontWeight: 'bold' }}>{myStats.total_shots}</span></div>
+            <div>HITS: <span style={{ color: 'var(--radar-cyan)', fontWeight: 'bold' }}>{myStats.total_hits}</span></div>
+            <div>ACCURACY: <span style={{ color: 'var(--radar-cyan)', fontWeight: 'bold' }}>{(myStats.accuracy * 100).toFixed(1)}%</span></div>
+          </div>
+        </div>
+      )}
 
       {/* CREATE & JOIN ROW */}
       <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap', marginBottom: '25px' }}>
