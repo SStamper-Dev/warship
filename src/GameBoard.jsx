@@ -393,7 +393,6 @@ function GameBoard({ gameId, playerId, onBack }) {
   return (
     <div style={{ padding: '20px' }}>
       <header style={{ marginBottom: '20px' }}>
-        <button onClick={onBack}>← Back to Lobby</button>
         <h2>Game #{gameId} — {game.status.toUpperCase()}</h2>
         {error && <p style={{ color: 'red' }}>{error}</p>}
       </header>

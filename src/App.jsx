@@ -99,7 +99,7 @@ function App() {
   const handleJoin = async (e) => {
     e.preventDefault()
     setUsernameError('')
-    setError(null)
+    setError('')
 
     const regex = /^[a-zA-Z0-9_]+$/
     
@@ -115,7 +115,7 @@ function App() {
       const data = await createPlayer(username)
       setPlayerId(data.player_id)
       localStorage.setItem('battleship_player_id', data.player_id)
-    } catch (err) { setError(err.message) }
+    } catch (err) { setUsernameError(err.message) }
   }
 
   const handleLogin = async (e) => {
@@ -123,7 +123,7 @@ function App() {
     setLoginError('')
 
     if(!loginUsername.trim()) {
-      setLoginError("Operative ID cannot be empty.")
+      setLoginError("Player Username cannot be empty.")
       return
     }
 
@@ -199,12 +199,12 @@ if (!playerId) {
         </div>
 
         <h1 style={{ fontSize: '4rem', textShadow: '0 0 20px var(--shadow-glow)', margin: '0 0 40px 0', letterSpacing: '4px' }}>
-          BATTLESHIP // ROYALE
+          WARSHIP // ROYALE
         </h1>
         
         {/* --- NEW SERVER SELECTOR --- */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '35px', width: '100%', maxWidth: '350px' }}>
-          <label style={{ letterSpacing: '2px', fontSize: '0.9rem', color: 'var(--muted-text)' }}>NETWORK UPLINK TARGET</label>
+          <label style={{ letterSpacing: '2px', fontSize: '0.9rem', color: 'var(--muted-text)' }}>SELECT SERVER</label>
           <select 
             className="radar-input" 
             value={serverUrl} 
@@ -223,7 +223,7 @@ if (!playerId) {
         {/* PRIMARY FORM: NEW REGISTRATION */}
         <form className="glass-panel" onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '350px', marginBottom: '15px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{ letterSpacing: '2px', fontSize: '0.9rem', color: 'var(--muted-text)' }}>REGISTER NEW OPERATIVE</label>
+            <label style={{ letterSpacing: '2px', fontSize: '0.9rem', color: 'var(--muted-text)' }}>REGISTER NEW PLAYER</label>
             <input 
               className="radar-input"
               type="text" 
@@ -241,7 +241,7 @@ if (!playerId) {
           )}
 
           <button type="submit" className="radar-btn" style={{ marginTop: '10px' }}>
-            INITIALIZE UPLINK
+            JOIN THE BATTLE
           </button>
         </form>
 
@@ -262,14 +262,14 @@ if (!playerId) {
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', opacity: 0.7 }}>
-            <label style={{ letterSpacing: '2px', fontSize: '0.8rem', color: 'var(--muted-text)' }}>RETURNING OPERATIVE LOGIN</label>
+            <label style={{ letterSpacing: '2px', fontSize: '0.8rem', color: 'var(--muted-text)' }}>RETURNING PLAYER LOGIN</label>
             <div style={{ display: 'flex', gap: '10px' }}>
               <input 
                 className="radar-input"
                 type="text" 
                 value={loginUsername} 
                 onChange={(e) => setLoginUsername(e.target.value)}
-                placeholder="Existing ID"
+                placeholder="Existing Username"
                 style={{ flex: 1, border: loginError ? '1px solid var(--danger-red)' : '1px solid var(--muted-text)' }}
               />
               <button 
@@ -300,7 +300,7 @@ if (!playerId) {
         {/* TACTICAL HEADER */}
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid var(--glass-border)' }}>
           <button className="radar-btn" onClick={() => setSelectedGameId(null)}>
-            &lt; ABORT & RETURN TO CIC
+            &lt; RETURN TO LOBBY
           </button>
           
           <button className="radar-btn" onClick={() => setIsLightMode(!isLightMode)}>
@@ -320,7 +320,7 @@ return (
       {/* HEADER */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', borderBottom: '1px solid var(--shadow-glow)', paddingBottom: '20px' }}>
         <h2 style={{ margin: 0, textShadow: '0 0 10px var(--shadow-glow)' }}>
-          CIC TERMINAL // OPERATIVE #{playerId}
+          WARSHIP LOBBY // PLAYER #{playerId}
         </h2>
         <div style={{ display: 'flex', gap: '15px' }}>
           <button className="radar-btn" onClick={() => setIsLightMode(!isLightMode)}>
@@ -338,7 +338,7 @@ return (
       {myStats && (
         <div className="glass-panel" style={{ borderLeft: '4px solid var(--radar-cyan)', padding: '15px 25px' }}>
           <h3 style={{ marginTop: 0, color: 'var(--radar-cyan)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px' }}>
-            &gt; OPERATIVE SERVICE RECORD
+            &gt; PLAYER STATISTICS
           </h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', color: 'var(--muted-text)', fontSize: '1rem' }}>
             <div>GAMES: <span style={{ color: 'var(--radar-cyan)', fontWeight: 'bold' }}>{myStats.games_played}</span></div>
@@ -356,7 +356,7 @@ return (
         
         {/* CREATE GAME PANEL */}
         <div className="glass-panel" style={{ flex: '1 1 400px', margin: 0 }}>
-          <h3 style={{ marginTop: 0, color: 'var(--radar-cyan)' }}>&gt; CONFIGURE NEW ENGAGEMENT</h3>
+          <h3 style={{ marginTop: 0, color: 'var(--radar-cyan)' }}>&gt; CREATE NEW GAME</h3>
           <form onSubmit={handleCreate} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <label style={{ fontSize: '12px', color: 'var(--muted-text)' }}>GRID SIZE (5-15)</label>
@@ -372,7 +372,7 @@ return (
 
         {/* FIND GAME PANEL */}
         <div className="glass-panel" style={{ flex: '1 1 300px', margin: 0 }}>
-          <h3 style={{ marginTop: 0, color: 'var(--radar-cyan)' }}>&gt; LOCATE ENGAGEMENT</h3>
+          <h3 style={{ marginTop: 0, color: 'var(--radar-cyan)' }}>&gt; SEARCH GAME ID</h3>
           <form onSubmit={handleFindGame} style={{ display: 'flex', gap: '10px' }}>
             <input className="radar-input" type="number" placeholder="MATCH ID" value={searchId} onChange={e => setSearchId(e.target.value)} required style={{ flex: 1 }}/>
             <button className="radar-btn" type="submit">SCAN</button>
@@ -401,7 +401,7 @@ return (
         {/* ACTIVE GAMES */}
         <section className="glass-panel" style={{ flex: '1 1 300px' }}>
           <h3 style={{ marginTop: 0, color: 'var(--radar-cyan)', borderBottom: '1px solid var(--shadow-glow)', paddingBottom: '10px' }}>
-            &gt; MY ACTIVE DEPLOYMENTS
+            &gt; MY ACTIVE GAMES
           </h3>
           {myGames.length > 0 ? (
             myGames.map(g => (
@@ -410,13 +410,13 @@ return (
                 <button className="radar-btn" onClick={() => handleEnterGame(g.game_id, true)} style={{ padding: '6px 12px', fontSize: '0.8rem' }}>RESUME</button>
               </div>
             ))
-          ) : <p style={{ color: 'var(--muted-text)' }}>No active deployments found.</p>}
+          ) : <p style={{ color: 'var(--muted-text)' }}>No active games found.</p>}
         </section>
 
         {/* ALL GAMES */}
         <section className="glass-panel" style={{ flex: '2 1 400px' }}>
           <h3 style={{ marginTop: 0, color: 'var(--radar-cyan)', borderBottom: '1px solid var(--shadow-glow)', paddingBottom: '10px' }}>
-            &gt; GLOBAL SENSOR NETWORK
+            &gt; GLOBAL GAME LIST
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
             {allGames.length > 0 ? (
@@ -428,7 +428,7 @@ return (
                   <div key={g.game_id} style={{ padding: '15px', background: 'var(--glass-bg)', border: '1px solid var(--shadow-glow)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     <div>
                       <div style={{ fontSize: '1.1rem', marginBottom: '5px' }}>MATCH #{g.game_id}</div>
-                      <div style={{ color: 'var(--muted-text)', fontSize: '0.8rem' }}>FLEETS: {g.current_players}/{g.max_players}</div>
+                      <div style={{ color: 'var(--muted-text)', fontSize: '0.8rem' }}>PLAYERS: {g.current_players}/{g.max_players}</div>
                     </div>
                     <button 
                       className="radar-btn"
@@ -436,7 +436,7 @@ return (
                       disabled={(isFull && !alreadyIn) || g.status === 'finished'}
                       style={{ padding: '8px', fontSize: '0.8rem', width: '100%' }}
                     >
-                      {alreadyIn ? 'RESUME' : isFull ? 'SECTOR FULL' : g.status === 'finished' ? 'CONCLUDED' : 'JOIN MATCH'}
+                      {alreadyIn ? 'RESUME' : isFull ? 'GAME FULL' : g.status === 'finished' ? 'CONCLUDED' : 'JOIN MATCH'}
                     </button>
                   </div>
                 )
