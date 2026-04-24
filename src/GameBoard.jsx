@@ -35,7 +35,7 @@ return (
             borderLeft: m.result === 'hit' ? '2px solid var(--danger-red)' : '2px solid transparent',
             paddingLeft: '8px'
           }}>
-            <span style={{ color: 'var(--radar-cyan)' }}>[{new Date(m.made_at || Date.now()).toLocaleTimeString()}]</span> PLAYER {m.player_id} fired at ({m.row}, {m.col}) - {m.result.toUpperCase()}
+            <span style={{ color: 'var(--radar-cyan)' }}>[{new Date(m.timestamp || Date.now()).toLocaleTimeString()}]</span> PLAYER {m.player_id} fired at ({m.row}, {m.col}) - {m.result.toUpperCase()}
           </div>
         ))}
       </div>
