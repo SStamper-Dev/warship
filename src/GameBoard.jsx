@@ -433,25 +433,40 @@ function GameBoard({ gameId, playerId, onBack }) {
             padding: '10px',
             background: 'var(--input-bg)',
             border: '1px solid var(--glass-border)',
-            borderRadius: '4px'
+            borderRadius: '4px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
           }}>
-            {gameState?.status === 'waiting_setup' ? (
+            {game?.status === 'waiting_setup' ? (
               // SETUP PHASE LOGIC
-              gameState.players?.find(p => p.player_id === playerId)?.ships_remaining > 0 ? (
+              game.players?.find(p => p.player_id === playerId)?.ships_remaining > 0 || isReady ? (
                 <span style={{ color: 'var(--muted-text)' }}>
                   &gt; FLEET DEPLOYED. AWAITING OTHER OPERATIVES...
                 </span>
               ) : (
-                <span style={{ color: 'var(--radar-cyan)' }}>
-                  &gt; DEPLOY FLEET: Place {3 - placedShips.length} ships on your grid
-                </span>
+                <>
+                  <span style={{ color: 'var(--radar-cyan)' }}>
+                    &gt; DEPLOY FLEET: Place {3 - placedShips.length} ships on your grid
+                  </span>
+                  <div>
+                    <button 
+                      className="radar-btn" 
+                      disabled={placedShips.length !== 3} 
+                      onClick={handleCommit}
+                      style={{ padding: '5px 15px', fontSize: '0.9rem' }}
+                    >
+                      LOCK SHIPS
+                    </button>
+                  </div>
+                </>
               )
             ) : (
               // ACTIVE COMBAT LOGIC
               <span>
                 <span style={{ color: 'var(--muted-text)' }}>&gt; FLEET STATUS: </span>
                 {(() => {
-                  const myData = gameState?.players?.find(p => p.player_id === playerId);
+                  const myData = game?.players?.find(p => p.player_id === playerId);
                   const remaining = myData ? myData.ships_remaining : 0;
                   return (
                     <span style={{ 
