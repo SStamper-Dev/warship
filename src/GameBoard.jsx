@@ -35,7 +35,7 @@ return (
             borderLeft: m.result === 'hit' ? '2px solid var(--danger-red)' : '2px solid transparent',
             paddingLeft: '8px'
           }}>
-            <span style={{ color: 'var(--radar-cyan)' }}>[{new Date(m.timestamp || Date.now()).toLocaleTimeString()}]</span> PLAYER {m.player_id} fired at ({m.row}, {m.col}) - {m.result.toUpperCase()}
+            <span style={{ color: 'var(--radar-cyan)' }}>[{new Date(m.timestamp + 'Z' || Date.now()).toLocaleTimeString()}]</span> PLAYER {m.player_id} fired at ({m.row}, {m.col}) - {m.result.toUpperCase()}
           </div>
         ))}
       </div>
@@ -426,12 +426,46 @@ function GameBoard({ gameId, playerId, onBack }) {
             myPlayerId={playerId}
             onCellClick={game.status === 'waiting_setup' ? handleCellClick : null}
           />
-          {!isReady && (
-            <div style={{ marginTop: '10px' }}>
-              <p>Place 3 ships ({3 - placedShips.length} left)</p>
-              <button disabled={placedShips.length !== 3} onClick={handleCommit}>Lock Ships</button>
-            </div>
-          )}
+          {/* DYNAMIC FLEET STATUS / PLACEMENT PROMPT */}
+          <div style={{ 
+            marginTop: '15px', 
+            textAlign: 'center', 
+            padding: '10px',
+            background: 'var(--input-bg)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '4px'
+          }}>
+            {gameState?.status === 'waiting_setup' ? (
+              // SETUP PHASE LOGIC
+              gameState.players?.find(p => p.player_id === playerId)?.ships_remaining > 0 ? (
+                <span style={{ color: 'var(--muted-text)' }}>
+                  &gt; FLEET DEPLOYED. AWAITING OTHER OPERATIVES...
+                </span>
+              ) : (
+                <span style={{ color: 'var(--radar-cyan)' }}>
+                  &gt; DEPLOY FLEET: Place {3 - placedShips.length} ships on your grid
+                </span>
+              )
+            ) : (
+              // ACTIVE COMBAT LOGIC
+              <span>
+                <span style={{ color: 'var(--muted-text)' }}>&gt; FLEET STATUS: </span>
+                {(() => {
+                  const myData = gameState?.players?.find(p => p.player_id === playerId);
+                  const remaining = myData ? myData.ships_remaining : 0;
+                  return (
+                    <span style={{ 
+                      color: remaining > 0 ? 'var(--radar-cyan)' : 'var(--danger-red)',
+                      fontWeight: 'bold',
+                      textShadow: remaining > 0 ? '0 0 5px var(--shadow-glow)' : 'none'
+                    }}>
+                      {remaining} / 3 SHIPS OPERATIONAL
+                    </span>
+                  );
+                })()}
+              </span>
+            )}
+          </div>
         </section>
 
         {/* RIGHT: OFFENSIVE (Strictly Your Fire) */}
