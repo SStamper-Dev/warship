@@ -13,48 +13,31 @@ function CombatLog({ moves }) {
     }
   }, [moves.length]); // Only trigger when a new move is added
 
-  return (
-    <div style={{
+return (
+    <div className="glass-panel" style={{
       marginTop: '20px',
       width: '100%',
       maxWidth: '800px',
-      background: '#1e1e1e',
-      border: '2px solid #444',
-      borderRadius: '8px',
-      padding: '10px',
-      fontFamily: 'monospace'
+      padding: '15px',
     }}>
-      <h4 style={{ margin: '0 0 10px 0', color: '#fff', borderBottom: '1px solid #444', paddingBottom: '5px' }}>
+      <h4 style={{ margin: '0 0 10px 0', color: 'var(--radar-cyan)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '5px' }}>
         📡 COMBAT LOG
       </h4>
       
-      {/* 3. Attach the ref to the div that actually has overflowY: 'auto' */}
       <div 
         ref={scrollContainerRef} 
-        style={{ height: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}
+        style={{ height: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', paddingRight: '10px' }}
       >
-        {moves.length === 0 ? <span style={{ color: '#888' }}>Awaiting orders...</span> : null}
-        
-        {moves.map((m, index) => {
-          const time = m.timestamp ? m.timestamp.split(' ')[1] : '00:00:00';
-          const col = m.column !== undefined ? m.column : m.col;
-          const isHit = m.result === 'hit';
-
-          return (
-            <div key={index} style={{ fontSize: '14px' }}>
-              <span style={{ color: '#888' }}>[{time}]</span>{' '}
-              <span style={{ color: '#64b5f6' }}>Player {m.player_id}</span>{' '}
-              fired at {m.row}, {col} {'-->'} {' '}
-              <span style={{ 
-                color: isHit ? '#f44336' : '#9e9e9e', 
-                fontWeight: isHit ? 'bold' : 'normal' 
-              }}>
-                {m.result.toUpperCase()}
-              </span>
-            </div>
-          );
-        })}
-        {/* The invisible target div is no longer needed and has been removed */}
+        {moves.length === 0 && <span style={{ color: 'var(--muted-text)' }}>Awaiting combat data...</span>}
+        {moves.map((m, idx) => (
+          <div key={idx} style={{ 
+            color: m.result === 'hit' ? 'var(--danger-red)' : 'var(--muted-text)',
+            borderLeft: m.result === 'hit' ? '2px solid var(--danger-red)' : '2px solid transparent',
+            paddingLeft: '8px'
+          }}>
+            <span style={{ color: 'var(--radar-cyan)' }}>[{new Date(m.made_at || Date.now()).toLocaleTimeString()}]</span> PLAYER {m.player_id} fired at ({m.row}, {m.col}) - {m.result.toUpperCase()}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -132,16 +115,16 @@ function LocalLeaderboard({ players }) {
   return (
     <div style={{
       marginTop: '20px', width: '100%', maxWidth: '800px',
-      background: '#1e1e1e', border: '2px solid #444',
+      background: 'className="glass-panel"', border: '2px solid var(--glass-border)',
       borderRadius: '8px', padding: '10px', fontFamily: 'monospace'
     }}>
-      <h4 style={{ margin: '0 0 10px 0', color: '#fff', borderBottom: '1px solid #444', paddingBottom: '5px' }}>
+      <h4 style={{ margin: '0 0 10px 0', color: 'var(--radar-cyan)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '5px' }}>
         🏆 PRE-GAME INTEL (Lobby Ranking)
       </h4>
       
       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
         <thead>
-          <tr style={{ color: '#888', borderBottom: '1px solid #333' }}>
+          <tr style={{ color: '#888', borderBottom: '1px solid var(--glass-border)' }}>
             <th style={{ padding: '8px' }}>Rank</th>
             <th style={{ padding: '8px' }}>Player</th>
             <th style={{ padding: '8px' }}>Win Ratio</th>
@@ -157,10 +140,10 @@ function LocalLeaderboard({ players }) {
                   {style.medal} #{index + 1}
                 </td>
                 <td style={{ padding: '8px', color: '#64b5f6' }}>{p.username}</td>
-                <td style={{ padding: '8px', color: p.winRatioText === 'N/A' ? '#888' : '#fff' }}>
+                <td style={{ padding: '8px', color: p.winRatioText === 'N/A' ? '#888' : 'var(--radar-cyan)' }}>
                   {p.winRatioText}
                 </td>
-                <td style={{ padding: '8px', color: '#fff' }}>{p.accuracyText}</td>
+                <td style={{ padding: '8px', color: 'var(--radar-cyan)' }}>{p.accuracyText}</td>
               </tr>
             );
           })}

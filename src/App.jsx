@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { createPlayer, loginPlayer, createGame, joinGame, fetchGames, fetchPlayerGames, fetchGameDetail, fetchPlayerStats } from './api'
 import GameBoard from './GameBoard'
 
-// Add this above function App() { ... }
 const SERVERS = [
   { name: "Team0x00", url: "https://battleship-server-18q1.onrender.com" },
   { name: "Team0x01", url: "https://battleship.koon.us" },
@@ -191,6 +190,14 @@ function App() {
 if (!playerId) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+
+        {/* ABSOLUTE POSITIONED TOGGLE */}
+        <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+          <button className="radar-btn" onClick={() => setIsLightMode(!isLightMode)}>
+            {isLightMode ? 'NIGHT VISION' : 'DAYLIGHT MODE'}
+          </button>
+        </div>
+
         <h1 style={{ fontSize: '4rem', textShadow: '0 0 20px var(--shadow-glow)', margin: '0 0 40px 0', letterSpacing: '4px' }}>
           BATTLESHIP // ROYALE
         </h1>
@@ -288,7 +295,22 @@ if (!playerId) {
 
   if (selectedGameId) {
     return (
-      <GameBoard gameId={selectedGameId} playerId={playerId} onBack={() => setSelectedGameId(null)} />
+      <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+        
+        {/* TACTICAL HEADER */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid var(--glass-border)' }}>
+          <button className="radar-btn" onClick={() => setSelectedGameId(null)}>
+            &lt; ABORT & RETURN TO CIC
+          </button>
+          
+          <button className="radar-btn" onClick={() => setIsLightMode(!isLightMode)}>
+            {isLightMode ? 'NIGHT VISION' : 'DAYLIGHT MODE'}
+          </button>
+        </header>
+
+        {/* GAME BOARD */}
+        <GameBoard gameId={selectedGameId} playerId={playerId} onBack={() => setSelectedGameId(null)} />
+      </div>
     )
   }
 
