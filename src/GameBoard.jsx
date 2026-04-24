@@ -466,7 +466,7 @@ function GameBoard({ gameId, playerId, onBack }) {
               <span>
                 <span style={{ color: 'var(--muted-text)' }}>&gt; FLEET STATUS: </span>
                 {(() => {
-                  const myData = game?.players?.find(p => p.player_id === playerId);
+                  const myData = game?.players?.find(p => Number(p.player_id) === Number(playerId));
                   const remaining = myData ? myData.ships_remaining : 0;
                   return (
                     <span style={{ 
