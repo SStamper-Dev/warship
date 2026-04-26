@@ -20,7 +20,7 @@ export const createPlayer = async (username) => {
             return data;
         } else {
             const errorData = await response.json();
-            throw new Error(errorData.error || "Failed to create player");
+            throw new Error(errorData.message || "Failed to create player");
         }
     } catch (error) {
         console.error("Connection Error:", error);
