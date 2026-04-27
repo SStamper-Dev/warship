@@ -199,7 +199,7 @@ if (!playerId) {
         </div>
 
         <h1 style={{ fontSize: '4rem', textShadow: '0 0 20px var(--shadow-glow)', margin: '0 0 40px 0', letterSpacing: '4px' }}>
-          WARSHIP // ROYALE
+          BATTLESHIP // ROYALE
         </h1>
         
         {/* --- NEW SERVER SELECTOR --- */}
